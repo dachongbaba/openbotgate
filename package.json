@@ -1,0 +1,43 @@
+{
+  "name": "opengate",
+  "version": "1.0.0",
+  "description": "Chat-based gateway for AI coding CLI tools (OpenCode, Claude Code) via Feishu/Lark bot",
+  "main": "dist/index.js",
+  "packageManager": "pnpm@8.15.6",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon",
+    "debug": "set DEBUG=true && ts-node src/debug.ts",
+    "test": "jest"
+  },
+  "keywords": [
+    "feishu",
+    "lark",
+    "opencode",
+    "claude-code",
+    "bot",
+    "ai",
+    "cli"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@larksuiteoapi/node-sdk": "^1.58.0",
+    "dotenv": "^16.3.1",
+    "node-pty": "^1.1.0",
+    "uuid": "^9.0.0",
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.7",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.11",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.2"
+  }
+}

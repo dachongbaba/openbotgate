@@ -11,59 +11,88 @@ export interface ToolResult {
 }
 
 export class CLITools {
-  private claudeCodePath: string = 'claude';
-
   /**
-   * Execute OpenCode using node-pty (pseudo-terminal).
-   * This approach solves the stdout buffering issue in non-TTY environments.
+   * Execute OpenCode CLI tool.
+   * Uses spawn + stdin.end() to ensure real-time output streaming.
    */
   async executeOpenCode(
     prompt: string,
     options: ExecutionOptions = {}
   ): Promise<ToolResult> {
-    if (!config.supportedTools.opencode) {
+    return this.executeCliTool({
+      toolName: 'opencode',
+      configKey: 'opencode',
+      command: `opencode run "${this.escapePrompt(prompt)}"`,
+      prompt,
+      options,
+    });
+  }
+
+  /**
+   * Execute Claude Code CLI tool.
+   * Uses spawn + stdin.end() to ensure real-time output streaming.
+   */
+  async executeClaudeCode(
+    prompt: string,
+    options: ExecutionOptions = {}
+  ): Promise<ToolResult> {
+    return this.executeCliTool({
+      toolName: 'claude-code',
+      configKey: 'claudeCode',
+      command: `claude -p "${this.escapePrompt(prompt)}"`,
+      prompt,
+      options,
+    });
+  }
+
+  /**
+   * Generic CLI tool executor for consistent behavior across tools.
+   */
+  private async executeCliTool(params: {
+    toolName: string;
+    configKey: keyof typeof config.supportedTools;
+    command: string;
+    prompt: string;
+    options: ExecutionOptions;
+  }): Promise<ToolResult> {
+    const { toolName, configKey, command, prompt, options } = params;
+
+    if (!config.supportedTools[configKey]) {
       return {
-        tool: 'opencode',
+        tool: toolName,
         success: false,
         output: '',
-        error: 'OpenCode tool is not enabled in configuration',
+        error: `${toolName} tool is not enabled in configuration`,
         duration: 0,
       };
     }
 
     const startTime = Date.now();
-    const opencodeTimeout =
-      options.timeout ?? config.execution.opencodeTimeout ?? config.execution.timeout;
+    const timeout = options.timeout ?? config.execution.opencodeTimeout ?? config.execution.timeout;
 
-    // Escape prompt for shell command
-    const escapedPrompt = prompt.replace(/"/g, '\\"');
-    const command = `opencode run "${escapedPrompt}"`;
-
-    logger.info(`🤖 Executing OpenCode: ${prompt.substring(0, 50)}...`);
+    logger.info(`🤖 Executing ${toolName}: ${prompt.substring(0, 50)}...`);
 
     try {
-      // Use PTY mode to solve stdout buffering issue
       const result = await commandExecutor.execute(command, {
         ...options,
-        timeout: opencodeTimeout,
-        usePty: true,
+        timeout,
       });
 
       const duration = Date.now() - startTime;
-      logger.info(`📊 OpenCode execution completed with success: ${result.success}`);
+      logger.info(`📊 ${toolName} execution completed with success: ${result.success}`);
 
       if (result.success) {
         return {
-          tool: 'opencode',
+          tool: toolName,
           success: true,
           output: result.stdout,
           duration,
         };
       } else {
         const errorMsg = result.stderr || 'Command failed';
-        logger.error(`❌ opencode failed in ${duration}ms: ${errorMsg}`);
+        logger.error(`❌ ${toolName} failed in ${duration}ms: ${errorMsg}`);
         return {
-          tool: 'opencode',
+          tool: toolName,
           success: false,
           output: result.stdout,
           error: errorMsg,
@@ -73,9 +102,9 @@ export class CLITools {
     } catch (error: any) {
       const duration = Date.now() - startTime;
       const errorMsg = error.message || 'Unknown error occurred';
-      logger.error(`❌ opencode exception: ${errorMsg}`);
+      logger.error(`❌ ${toolName} exception: ${errorMsg}`);
       return {
-        tool: 'opencode',
+        tool: toolName,
         success: false,
         output: '',
         error: errorMsg,
@@ -84,44 +113,14 @@ export class CLITools {
     }
   }
 
-  async executeClaudeCode(
-    prompt: string,
-    options: ExecutionOptions = {}
-  ): Promise<ToolResult> {
-    if (!config.supportedTools.claudeCode) {
-      return {
-        tool: 'claude-code',
-        success: false,
-        output: '',
-        error: 'Claude Code tool is not enabled in configuration',
-        duration: 0,
-      };
-    }
-
-    const startTime = Date.now();
-    const command = `echo "${prompt.replace(/"/g, '\\"')}" | ${this.claudeCodePath}`;
-
-    try {
-      const result = await commandExecutor.execute(command, options);
-      const duration = Date.now() - startTime;
-
-      return {
-        tool: 'claude-code',
-        success: result.success,
-        output: result.stdout || result.stderr,
-        error: result.success ? undefined : result.stderr,
-        duration,
-      };
-    } catch (error: any) {
-      const duration = Date.now() - startTime;
-      return {
-        tool: 'claude-code',
-        success: false,
-        output: '',
-        error: error.message || 'Unknown error occurred',
-        duration,
-      };
-    }
+  /**
+   * Escape prompt string for shell command.
+   */
+  private escapePrompt(str: string): string {
+    return str
+      .replace(/"/g, '\\"')
+      .replace(/\r?\n/g, ' ')
+      .replace(/[&|<>^]/g, '^$&');
   }
 
   async executeShell(

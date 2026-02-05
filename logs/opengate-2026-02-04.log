@@ -1,0 +1,216 @@
+2026-02-04 17:29:42 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 17:29:42 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 17:29:42 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 17:29:42 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 17:33:09 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 17:33:09 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 17:33:09 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 17:33:09 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 17:33:43 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:33:44 [INFO] 🤖 Running OpenCode: 你是谁
+2026-02-04 17:34:03 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:34:03 [INFO] 🤖 Running OpenCode: 你是谁
+2026-02-04 17:35:15 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:35:16 [INFO] 🤖 Running OpenCode: 你是谁
+2026-02-04 17:38:44 [ERROR] ❌ opencode failed in 300059ms: Command failed: opencode run "你是谁"
+
+2026-02-04 17:39:03 [ERROR] ❌ opencode failed in 300031ms: Command failed: opencode run "你是谁"
+
+2026-02-04 17:39:08 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:39:08 [INFO] 🤖 Running OpenCode: 你是谁
+2026-02-04 17:40:16 [ERROR] ❌ opencode failed in 300011ms: Command failed: opencode run "你是谁"
+
+2026-02-04 17:42:18 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 17:42:18 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 17:42:18 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 17:42:18 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 17:42:23 [INFO] 👋 Shutting down OpenGate...
+2026-02-04 17:45:45 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 17:45:45 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 17:45:45 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 17:45:45 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 17:46:10 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:46:11 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 17:46:30 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:46:30 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 17:47:21 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:47:22 [INFO] 👋 Shutting down OpenGate...
+2026-02-04 17:47:50 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 17:47:50 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 17:47:50 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 17:47:50 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 17:49:40 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 17:49:40 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 17:49:40 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 17:49:40 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 17:50:29 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:50:29 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 17:50:33 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:50:34 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 17:50:53 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:50:53 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 17:51:34 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:51:34 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 17:53:55 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:53:55 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 17:55:29 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 17:55:29 [ERROR] ❌ opencode failed in 300045ms: Command failed: opencode run "你是谁"
+
+2026-02-04 17:55:34 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 17:55:34 [ERROR] ❌ opencode failed in 300036ms: Command failed: opencode run "你是谁"
+
+2026-02-04 17:55:45 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:55:46 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:55:46 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 17:55:46 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 17:55:53 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 17:55:53 [ERROR] ❌ opencode failed in 300011ms: Command failed: opencode run "你是谁"
+
+2026-02-04 17:55:56 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 17:55:57 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 17:56:34 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 17:56:34 [ERROR] ❌ opencode failed in 300033ms: Command failed: opencode run "你是谁"
+
+2026-02-04 17:58:55 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 17:58:55 [ERROR] ❌ opencode failed in 300033ms: Command failed: opencode run "你是谁"
+
+2026-02-04 18:00:46 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 18:00:46 [ERROR] ❌ opencode failed in 300046ms: Command failed: opencode run "你是谁"
+
+2026-02-04 18:00:46 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 18:00:46 [ERROR] ❌ opencode failed in 300037ms: Command failed: opencode run "你是谁"
+
+2026-02-04 18:00:57 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 18:00:57 [ERROR] ❌ opencode failed in 300038ms: Command failed: opencode run "你是谁"
+
+2026-02-04 18:02:38 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:02:39 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:02:56 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:02:56 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:02:56 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:02:56 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:03:00 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:03:00 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:03:00 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:03:00 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:03:04 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:03:04 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:03:04 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:03:04 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:03:18 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:03:18 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:03:18 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:03:18 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:03:45 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:03:46 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:03:46 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:03:46 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:03:52 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:03:52 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:03:52 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:03:52 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:04:09 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:04:09 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:04:10 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:04:10 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:04:49 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:04:50 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:05:08 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:05:08 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:05:35 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你谁谁
+2026-02-04 18:05:36 [INFO] 🤖 Starting OpenCode execution: 你谁谁
+2026-02-04 18:08:10 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:08:10 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:08:10 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:08:10 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:08:19 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:08:19 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:08:19 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:08:19 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:08:27 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:08:27 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:08:27 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:08:27 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:08:49 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:08:49 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:08:49 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:08:49 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:10:12 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:10:12 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:10:22 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:10:22 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:10:22 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:10:22 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:25:52 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:25:53 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:30:53 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 18:30:53 [ERROR] ❌ opencode failed in 300053ms: Execution timed out after 300000ms. Command failed: opencode run "你是谁"
+
+2026-02-04 18:35:20 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:35:21 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:37:26 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:37:26 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:37:26 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:37:26 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:38:30 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:38:30 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:38:30 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:38:30 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:39:11 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:39:12 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:41:12 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 18:41:12 [ERROR] ❌ opencode failed in 120050ms: Execution timed out after 120000ms. Command failed: opencode run "你是谁"
+
+2026-02-04 18:48:16 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:48:16 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:48:35 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:48:35 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:50:16 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 18:50:16 [ERROR] ❌ opencode failed in 120040ms: Execution timed out after 120000ms. Command failed: opencode run "你是谁"
+
+2026-02-04 18:50:35 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 18:50:35 [ERROR] ❌ opencode failed in 120018ms: Execution timed out after 120000ms. Command failed: opencode run "你是谁"
+
+2026-02-04 18:51:38 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:51:38 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:53:38 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 18:53:38 [ERROR] ❌ opencode failed in 120017ms: Execution timed out after 120000ms. Command failed: opencode run "你是谁"
+
+2026-02-04 18:53:39 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:53:39 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:55:39 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 18:55:39 [ERROR] ❌ opencode failed in 120048ms: Execution timed out after 120000ms. Command failed: opencode run "你是谁"
+
+2026-02-04 18:56:01 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:56:01 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:58:01 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 18:58:01 [ERROR] ❌ opencode failed in 120016ms: Execution timed out after 120000ms. Command failed: opencode run "你是谁"
+
+2026-02-04 18:58:20 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:58:20 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:58:20 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:58:20 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:58:30 [INFO] 🤖 OpenGate - AI Code Gateway
+2026-02-04 18:58:30 [INFO] ✅ Starting Feishu WebSocket connection...
+2026-02-04 18:58:30 [INFO] 🔌 WebSocket connection established with Feishu
+2026-02-04 18:58:30 [INFO] ✨ Ready to receive messages via Feishu bot!
+2026-02-04 18:58:31 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:58:31 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 18:58:50 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 18:58:51 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 19:01:31 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 19:01:31 [ERROR] ❌ opencode failed in 180049ms: Execution timed out after 180000ms. Command failed: opencode run "你是谁"
+
+2026-02-04 19:01:51 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 19:01:51 [ERROR] ❌ opencode failed in 180031ms: Execution timed out after 180000ms. Command failed: opencode run "你是谁"
+
+2026-02-04 19:03:54 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 19:03:54 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 19:06:54 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 19:06:54 [ERROR] ❌ opencode failed in 180041ms: Execution timed out after 180000ms. Command failed: opencode run "你是谁"
+
+2026-02-04 19:10:15 [INFO] 👤 ou_c5d53336369c4b1978b9e17ecf849745: 你是谁
+2026-02-04 19:10:16 [INFO] 🤖 Starting OpenCode execution: 你是谁
+2026-02-04 19:13:16 [INFO] 📊 OpenCode execution completed with success: false
+2026-02-04 19:13:16 [ERROR] ❌ opencode failed in 180032ms: Execution timed out after 180000ms. Command failed: opencode run "你是谁"
+

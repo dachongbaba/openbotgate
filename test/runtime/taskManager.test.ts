@@ -21,6 +21,8 @@ jest.mock('../../src/runtime/cliTools', () => ({
 jest.mock('../../src/utils/logger', () => ({
   __esModule: true,
   default: { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() },
+  formatDuration: (ms: number) => `${ms}ms`,
+  truncateOutput: (output: string) => output,
 }));
 
 // Helper to wait a bit between operations (50ms to ensure different timestamps)

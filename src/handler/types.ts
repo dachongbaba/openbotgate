@@ -5,6 +5,9 @@ export interface ParsedEvent {
   messageId: string;
   chatId: string;
   senderId: string;
+  senderName?: string;
+  chatType?: string;  // p2p, group
+  channel: string;    // feishu, lark
   text: string;
   messageType: string;
 }

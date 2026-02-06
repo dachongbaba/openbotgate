@@ -3,12 +3,19 @@ import type { ParsedEvent } from './types';
 /**
  * Parse Feishu event payload to extract message info.
  */
-export function parseFeishuEvent(data: any): ParsedEvent {
+export function parseFeishuEvent(data: any, channel = 'feishu'): ParsedEvent {
   const messageId = data.message.message_id;
   const chatId = data.message.chat_id;
-  const senderId = data.sender.sender_id.open_id;
+  const senderId = data.sender.sender_id?.open_id || data.sender.sender_id?.user_id || '';
+  const chatType = data.message.chat_type; // p2p, group
   const messageType = data.message.message_type;
   const content = data.message.content;
+
+  // Try to get sender name from mentions or sender info
+  let senderName = '';
+  if (data.sender.sender_id?.name) {
+    senderName = data.sender.sender_id.name;
+  }
 
   let text = '';
   if (messageType === 'text') {
@@ -19,7 +26,7 @@ export function parseFeishuEvent(data: any): ParsedEvent {
     text = extractTextFromPost(contentObj);
   }
 
-  return { messageId, chatId, senderId, text, messageType };
+  return { messageId, chatId, senderId, senderName, chatType, channel, text, messageType };
 }
 
 /**

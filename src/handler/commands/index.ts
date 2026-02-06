@@ -5,7 +5,6 @@ import { run as tasks, cancel } from './tasks';
 import { run as sync } from './sync';
 import { run as async } from './async';
 import { run as opencode } from './opencode';
-import { run as claude } from './claude';
 import { run as git } from './git';
 import { run as newConversation } from './new';
 
@@ -20,7 +19,6 @@ export const commands: Record<string, CommandHandler> = {
   '/sync': sync,
   '/async': async,
   '/opencode': opencode,
-  '/claudecode': claude,
   '/git': git,
   '/new': newConversation,
 };

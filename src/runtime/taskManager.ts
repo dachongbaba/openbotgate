@@ -56,7 +56,7 @@ class TaskManager {
     return task;
   }
 
-  async executeTask(taskId: string): Promise<ToolResult | null> {
+  async executeTask(taskId: string, onOutput?: (chunk: string) => void): Promise<ToolResult | null> {
     const task = this.tasks.get(taskId);
     if (!task) return null;
 
@@ -70,15 +70,11 @@ class TaskManager {
       : task.command;
     logger.debug(`🚀 Executing ${task.tool}: ${cmdPreview}`);
 
-    // Enable real-time streaming output
-    const streamOptions = { onOutput: () => {} };
+    const streamOptions = { onOutput };
 
     switch (task.tool) {
       case 'opencode':
         result = await cliTools.executeOpenCode(task.command, streamOptions);
-        break;
-      case 'claude-code':
-        result = await cliTools.executeClaudeCode(task.command, streamOptions);
         break;
       case 'shell':
         result = await cliTools.executeShell(task.command, streamOptions);

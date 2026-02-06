@@ -12,8 +12,13 @@ import { run as executeOpenCode } from './commands/opencode';
  */
 export async function handleFeishuMessageEvent(data: any): Promise<void> {
   try {
-    const event = parseFeishuEvent(data);
-    logger.info(`👤 ${event.senderId}: ${event.text}`);
+    const event = parseFeishuEvent(data, 'feishu');
+    
+    // Format sender info: channel + name (or just channel if no name)
+    const sender = event.senderName 
+      ? `${event.channel}/${event.senderName}`
+      : event.channel;
+    logger.info(`👤 ${sender}: ${event.text}`);
 
     // Build command context
     const ctx: CommandContext = {
@@ -33,10 +38,10 @@ export async function handleFeishuMessageEvent(data: any): Promise<void> {
 
       const handler = getCommand(cmd);
       if (handler) {
-        console.log('🔧 Processing command:', cmd);
+        logger.info(`🔧 Command: ${cmd} ${args ? args.substring(0, 30) + (args.length > 30 ? '...' : '') : ''}`);
         await handler(ctx);
       } else {
-        console.log('❓ Unknown command:', cmd);
+        logger.warn(`❓ Unknown command: ${cmd}`);
         await ctx.reply(`Unknown command: ${cmd}\nUse /help to see available commands.`);
       }
     } else {

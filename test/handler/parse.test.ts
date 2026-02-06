@@ -6,11 +6,12 @@ describe('parseFeishuEvent', () => {
       message: {
         message_id: 'msg_123',
         chat_id: 'chat_456',
+        chat_type: 'p2p',
         message_type: 'text',
         content: JSON.stringify({ text: 'hello world' }),
       },
       sender: {
-        sender_id: { open_id: 'user_789' },
+        sender_id: { open_id: 'user_789', name: '张三' },
       },
     };
 
@@ -19,8 +20,29 @@ describe('parseFeishuEvent', () => {
     expect(result.messageId).toBe('msg_123');
     expect(result.chatId).toBe('chat_456');
     expect(result.senderId).toBe('user_789');
+    expect(result.senderName).toBe('张三');
+    expect(result.chatType).toBe('p2p');
+    expect(result.channel).toBe('feishu');
     expect(result.text).toBe('hello world');
     expect(result.messageType).toBe('text');
+  });
+
+  it('uses custom channel name', () => {
+    const data = {
+      message: {
+        message_id: 'msg_123',
+        chat_id: 'chat_456',
+        message_type: 'text',
+        content: JSON.stringify({ text: 'test' }),
+      },
+      sender: {
+        sender_id: { open_id: 'user_789' },
+      },
+    };
+
+    const result = parseFeishuEvent(data, 'lark');
+
+    expect(result.channel).toBe('lark');
   });
 
   it('parses post message and extracts text', () => {

@@ -1,4 +1,4 @@
-import logger from '../utils/logger';
+import logger, { formatDuration, truncateOutput } from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 import { cliTools, ToolResult } from './cliTools';
 
@@ -65,26 +65,26 @@ class TaskManager {
 
     let result: ToolResult;
 
+    const cmdPreview = task.command.length > 50 
+      ? task.command.substring(0, 50) + '...' 
+      : task.command;
+    logger.debug(`🚀 Executing ${task.tool}: ${cmdPreview}`);
+
+    // Enable real-time streaming output
+    const streamOptions = { onOutput: () => {} };
+
     switch (task.tool) {
       case 'opencode':
-        logger.info(`🤖 Starting OpenCode execution: ${task.command.substring(0, 50)}${task.command.length > 50 ? '...' : ''}`);
-        result = await cliTools.executeOpenCode(task.command);
-        logger.info(`📊 OpenCode execution completed with success: ${result.success}`);
+        result = await cliTools.executeOpenCode(task.command, streamOptions);
         break;
       case 'claude-code':
-        logger.info(`🤖 Starting Claude Code execution: ${task.command.substring(0, 50)}${task.command.length > 50 ? '...' : ''}`);
-        result = await cliTools.executeClaudeCode(task.command);
-        logger.info(`📊 Claude Code execution completed with success: ${result.success}`);
+        result = await cliTools.executeClaudeCode(task.command, streamOptions);
         break;
       case 'shell':
-        logger.info(`🔧 Starting Shell execution: ${task.command}`);
-        result = await cliTools.executeShell(task.command);
-        logger.info(`📊 Shell execution completed with success: ${result.success}`);
+        result = await cliTools.executeShell(task.command, streamOptions);
         break;
       case 'git':
-        logger.info(`🔧 Starting Git execution: ${task.command}`);
-        result = await cliTools.executeGit(task.command);
-        logger.info(`📊 Git execution completed with success: ${result.success}`);
+        result = await cliTools.executeGit(task.command, streamOptions);
         break;
       default:
         result = {
@@ -100,10 +100,15 @@ class TaskManager {
     task.status = result.success ? 'completed' : 'failed';
     task.updatedAt = new Date();
 
+    const duration = formatDuration(result.duration);
     if (result.success) {
-      logger.info(`✅ ${result.tool} completed in ${result.duration}ms`);
+      logger.debug(`✅ ${result.tool} completed in ${duration}`);
+      logger.debug(`📤 Output: ${truncateOutput(result.output)}`);
     } else {
-      logger.error(`❌ ${result.tool} failed in ${result.duration}ms: ${result.error}`);
+      logger.error(`❌ ${result.tool} failed in ${duration}: ${result.error}`);
+      if (result.output) {
+        logger.debug(`📤 Output: ${truncateOutput(result.output)}`);
+      }
     }
 
     return result;

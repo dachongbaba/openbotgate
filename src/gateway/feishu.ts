@@ -2,24 +2,52 @@ import logger from '../utils/logger';
 import * as Lark from '@larksuiteoapi/node-sdk';
 import { config } from '../config/config';
 
+// Custom logger adapter for Feishu SDK (filter verbose messages)
+let wsReady = false;
+const sdkLogger = {
+  debug: () => {},  // Suppress debug
+  trace: () => {},  // Suppress trace
+  info: (...args: any[]) => {
+    const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+    // Mark ready when any "ready" message from SDK
+    if (!wsReady && (msg.includes('ready') || msg.includes('connected'))) {
+      wsReady = true;
+      logger.info('✅ Feishu WS ready');
+    }
+    // Filter out verbose/duplicate SDK messages
+    if (msg.includes('event-dispatch')) return;
+    if (msg.includes('client ready')) return;
+    if (msg.includes('receive events')) return;
+  },
+  warn: (...args: any[]) => { logger.warn(`[feishu] ${args.join(' ')}`); },
+  error: (...args: any[]) => { logger.error(`[feishu] ${args.join(' ')}`); },
+};
+
 export class FeishuGateway {
-  private client: Lark.Client;
-  private eventDispatcher: Lark.EventDispatcher;
+  private client?: Lark.Client;
+  private eventDispatcher?: Lark.EventDispatcher;
 
-  constructor() {
-    this.client = new Lark.Client({
-      appId: config.feishu.appId,
-      appSecret: config.feishu.appSecret,
-      appType: Lark.AppType.SelfBuild,
-      domain: config.feishu.domain === 'lark' ? Lark.Domain.Lark : Lark.Domain.Feishu,
-    });
-
-    this.eventDispatcher = new Lark.EventDispatcher({
-      verificationToken: config.feishu.verificationToken || '',
-    });
+  /** Lazy init client on first use */
+  private getClient(): Lark.Client {
+    if (!this.client) {
+      this.client = new Lark.Client({
+        appId: config.feishu.appId,
+        appSecret: config.feishu.appSecret,
+        appType: Lark.AppType.SelfBuild,
+        domain: config.feishu.domain === 'lark' ? Lark.Domain.Lark : Lark.Domain.Feishu,
+        logger: sdkLogger,
+      });
+    }
+    return this.client;
   }
 
   registerMessageHandler(handler: (data: any) => Promise<void>) {
+    if (!this.eventDispatcher) {
+      this.eventDispatcher = new Lark.EventDispatcher({
+        verificationToken: config.feishu.verificationToken || '',
+        logger: sdkLogger,
+      } as any);
+    }
     this.eventDispatcher.register({
       'im.message.receive_v1': async (data) => {
         await handler(data);
@@ -27,13 +55,13 @@ export class FeishuGateway {
     });
   }
 
-  getEventDispatcher(): Lark.EventDispatcher {
+  getEventDispatcher(): Lark.EventDispatcher | undefined {
     return this.eventDispatcher;
   }
 
   async sendTextMessage(receiveId: string, receiveIdType: string, text: string): Promise<void> {
     try {
-      await this.client.im.message.create({
+      await this.getClient().im.message.create({
         params: {
           receive_id_type: receiveIdType as any,
         },
@@ -70,7 +98,7 @@ export class FeishuGateway {
         },
       };
 
-      await this.client.im.message.create({
+      await this.getClient().im.message.create({
         params: {
           receive_id_type: receiveIdType as any,
         },
@@ -88,7 +116,7 @@ export class FeishuGateway {
 
   async replyToMessage(messageId: string, text: string): Promise<void> {
     try {
-      await this.client.im.message.reply({
+      await this.getClient().im.message.reply({
         path: {
           message_id: messageId,
         },
@@ -105,7 +133,7 @@ export class FeishuGateway {
 
   async getMessage(messageId: string): Promise<any> {
     try {
-      const response = await this.client.im.message.get({
+      const response = await this.getClient().im.message.get({
         path: {
           message_id: messageId,
         },
@@ -118,15 +146,18 @@ export class FeishuGateway {
   }
 
   startWebSocketConnection(messageHandler: (data: any) => Promise<void>): void {
+    logger.info('🔌 Connecting to Feishu WebSocket...');
+    
     const wsClient = new Lark.WSClient({
       appId: config.feishu.appId,
       appSecret: config.feishu.appSecret,
       domain: config.feishu.domain === 'lark' ? Lark.Domain.Lark : Lark.Domain.Feishu,
       loggerLevel: Lark.LoggerLevel.info,
+      logger: sdkLogger,
     });
 
     wsClient.start({
-      eventDispatcher: new Lark.EventDispatcher({}).register({
+      eventDispatcher: new Lark.EventDispatcher({ logger: sdkLogger } as any).register({
         'im.message.receive_v1': async (data) => {
           await messageHandler(data);
         },

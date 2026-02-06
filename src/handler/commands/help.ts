@@ -7,7 +7,6 @@ Available Commands:
 
 *Tool Execution:*
 • \`/opencode <prompt>\` - Execute OpenCode with prompt
-• \`/claudecode <prompt>\` - Execute Claude Code with prompt
 • \`/git <command>\` - Execute Git command
 • \`/shell <command>\` - Execute Shell command (if enabled)
 
@@ -25,7 +24,7 @@ Available Commands:
 • \`/opencode Write a function to calculate fibonacci\`
 • \`/git status\`
 • \`/sync opencode Summarize this code\`
-• \`/async claudecode Generate unit tests for all files\`
+• \`/async opencode Generate unit tests for all files\`
 `;
 
 export async function run(ctx: CommandContext): Promise<void> {

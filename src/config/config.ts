@@ -28,7 +28,6 @@ export interface BotConfig {
   };
   supportedTools: {
     opencode: boolean;
-    claudeCode: boolean;
     shell: boolean;
     git: boolean;
   };
@@ -64,7 +63,6 @@ export function loadConfig(): BotConfig {
     },
     supportedTools: {
       opencode: process.env.TOOL_OPENCODE_ENABLED !== 'false',
-      claudeCode: process.env.TOOL_CLAUDE_CODE_ENABLED !== 'false',
       shell: process.env.TOOL_SHELL_ENABLED === 'true',
       git: process.env.TOOL_GIT_ENABLED === 'true',
     },

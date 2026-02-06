@@ -26,16 +26,6 @@ export class CLITools {
     });
   }
 
-  async executeClaudeCode(prompt: string, options: ToolOptions = {}): Promise<ToolResult> {
-    return this.executeCliTool({
-      toolName: 'claude-code',
-      configKey: 'claudeCode',
-      command: `claude -p "${this.escapePrompt(prompt)}"`,
-      prompt,
-      options,
-    });
-  }
-
   private async executeCliTool(params: {
     toolName: string;
     configKey: keyof typeof config.supportedTools;

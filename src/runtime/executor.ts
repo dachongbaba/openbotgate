@@ -70,8 +70,11 @@ export class CommandExecutor {
         clearTimeout(timeoutId);
         const duration = Date.now() - startTime;
 
-        stdout = this.cleanOutput(stdout);
-        stderr = this.cleanOutput(stderr);
+        // TODO: 暂时不过滤输出，CLI 输出什么就发送什么
+        // stdout = this.cleanOutput(stdout);
+        // stderr = this.cleanOutput(stderr);
+        stdout = this.truncateOutput(stdout.replace(/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '').trim());
+        stderr = this.truncateOutput(stderr.replace(/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '').trim());
 
         if (killed) {
           const timeoutMsg = `Execution timed out after ${timeout}ms.`;

@@ -1,5 +1,5 @@
 import logger from '../utils/logger';
-import { commandExecutor, ExecutionOptions } from './commandExecutor';
+import { executor, ExecutionOptions } from './executor';
 import { config } from '../config/config';
 
 export interface ToolResult {
@@ -11,14 +11,7 @@ export interface ToolResult {
 }
 
 export class CLITools {
-  /**
-   * Execute OpenCode CLI tool.
-   * Uses spawn + stdin.end() to ensure real-time output streaming.
-   */
-  async executeOpenCode(
-    prompt: string,
-    options: ExecutionOptions = {}
-  ): Promise<ToolResult> {
+  async executeOpenCode(prompt: string, options: ExecutionOptions = {}): Promise<ToolResult> {
     return this.executeCliTool({
       toolName: 'opencode',
       configKey: 'opencode',
@@ -28,14 +21,7 @@ export class CLITools {
     });
   }
 
-  /**
-   * Execute Claude Code CLI tool.
-   * Uses spawn + stdin.end() to ensure real-time output streaming.
-   */
-  async executeClaudeCode(
-    prompt: string,
-    options: ExecutionOptions = {}
-  ): Promise<ToolResult> {
+  async executeClaudeCode(prompt: string, options: ExecutionOptions = {}): Promise<ToolResult> {
     return this.executeCliTool({
       toolName: 'claude-code',
       configKey: 'claudeCode',
@@ -45,9 +31,6 @@ export class CLITools {
     });
   }
 
-  /**
-   * Generic CLI tool executor for consistent behavior across tools.
-   */
   private async executeCliTool(params: {
     toolName: string;
     configKey: keyof typeof config.supportedTools;
@@ -73,49 +56,26 @@ export class CLITools {
     logger.info(`🤖 Executing ${toolName}: ${prompt.substring(0, 50)}...`);
 
     try {
-      const result = await commandExecutor.execute(command, {
-        ...options,
-        timeout,
-      });
-
+      const result = await executor.execute(command, { ...options, timeout });
       const duration = Date.now() - startTime;
+
       logger.info(`📊 ${toolName} execution completed with success: ${result.success}`);
 
       if (result.success) {
-        return {
-          tool: toolName,
-          success: true,
-          output: result.stdout,
-          duration,
-        };
-      } else {
-        const errorMsg = result.stderr || 'Command failed';
-        logger.error(`❌ ${toolName} failed in ${duration}ms: ${errorMsg}`);
-        return {
-          tool: toolName,
-          success: false,
-          output: result.stdout,
-          error: errorMsg,
-          duration,
-        };
+        return { tool: toolName, success: true, output: result.stdout, duration };
       }
+
+      const errorMsg = result.stderr || 'Command failed';
+      logger.error(`❌ ${toolName} failed in ${duration}ms: ${errorMsg}`);
+      return { tool: toolName, success: false, output: result.stdout, error: errorMsg, duration };
     } catch (error: any) {
       const duration = Date.now() - startTime;
       const errorMsg = error.message || 'Unknown error occurred';
       logger.error(`❌ ${toolName} exception: ${errorMsg}`);
-      return {
-        tool: toolName,
-        success: false,
-        output: '',
-        error: errorMsg,
-        duration,
-      };
+      return { tool: toolName, success: false, output: '', error: errorMsg, duration };
     }
   }
 
-  /**
-   * Escape prompt string for shell command.
-   */
   private escapePrompt(str: string): string {
     return str
       .replace(/"/g, '\\"')
@@ -123,10 +83,7 @@ export class CLITools {
       .replace(/[&|<>^]/g, '^$&');
   }
 
-  async executeShell(
-    command: string,
-    options: ExecutionOptions = {}
-  ): Promise<ToolResult> {
+  async executeShell(command: string, options: ExecutionOptions = {}): Promise<ToolResult> {
     if (!config.supportedTools.shell) {
       return {
         tool: 'shell',
@@ -138,7 +95,7 @@ export class CLITools {
     }
 
     const startTime = Date.now();
-    const result = await commandExecutor.execute(command, options);
+    const result = await executor.execute(command, options);
     const duration = Date.now() - startTime;
 
     return {
@@ -150,10 +107,7 @@ export class CLITools {
     };
   }
 
-  async executeGit(
-    command: string,
-    options: ExecutionOptions = {}
-  ): Promise<ToolResult> {
+  async executeGit(command: string, options: ExecutionOptions = {}): Promise<ToolResult> {
     if (!config.supportedTools.git) {
       return {
         tool: 'git',
@@ -166,7 +120,7 @@ export class CLITools {
 
     const startTime = Date.now();
     const gitCommand = `git ${command}`;
-    const result = await commandExecutor.execute(gitCommand, options);
+    const result = await executor.execute(gitCommand, options);
     const duration = Date.now() - startTime;
 
     return {

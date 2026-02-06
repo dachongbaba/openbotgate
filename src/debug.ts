@@ -1,4 +1,4 @@
-import { handleFeishuMessageEvent } from './handlers/messageHandlerOfficial';
+import { handleFeishuMessageEvent } from './handler';
 
 // Set debug mode
 process.env.DEBUG = 'true';

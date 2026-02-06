@@ -13,17 +13,13 @@ export interface Task {
   updatedAt: Date;
 }
 
-export class TaskManagerSimple {
+class TaskManager {
   private tasks: Map<string, Task> = new Map();
   private userTasks: Map<string, Set<string>> = new Map();
   private readonly MAX_TASKS_PER_USER = 10;
   private readonly TASK_TIMEOUT = 300000; // 5 minutes
 
-  async createTask(
-    userId: string,
-    command: string,
-    tool: string
-  ): Promise<Task> {
+  async createTask(userId: string, command: string, tool: string): Promise<Task> {
     const userTaskCount = this.userTasks.get(userId)?.size || 0;
     if (userTaskCount >= this.MAX_TASKS_PER_USER) {
       const oldestTask = this.userTasks.get(userId);
@@ -62,9 +58,7 @@ export class TaskManagerSimple {
 
   async executeTask(taskId: string): Promise<ToolResult | null> {
     const task = this.tasks.get(taskId);
-    if (!task) {
-      return null;
-    }
+    if (!task) return null;
 
     task.status = 'running';
     task.updatedAt = new Date();
@@ -121,9 +115,8 @@ export class TaskManagerSimple {
 
   getUserTasks(userId: string): Task[] {
     const taskIds = this.userTasks.get(userId);
-    if (!taskIds) {
-      return [];
-    }
+    if (!taskIds) return [];
+
     return Array.from(taskIds)
       .map((id) => this.tasks.get(id))
       .filter((task): task is Task => task !== undefined)
@@ -132,9 +125,7 @@ export class TaskManagerSimple {
 
   cancelTask(taskId: string): boolean {
     const task = this.tasks.get(taskId);
-    if (!task) {
-      return false;
-    }
+    if (!task) return false;
 
     if (task.status === 'running') {
       task.status = 'failed';
@@ -164,9 +155,9 @@ export class TaskManagerSimple {
   }
 }
 
-export const taskManagerSimple = new TaskManagerSimple();
+export const taskManager = new TaskManager();
 
 // Periodic cleanup every minute
 setInterval(() => {
-  taskManagerSimple.cleanup();
+  taskManager.cleanup();
 }, 60000);

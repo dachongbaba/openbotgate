@@ -1,13 +1,13 @@
 import logger from './utils/logger';
-import { feishuServiceOfficial } from './services/feishuServiceOfficial';
-import { handleFeishuMessageEvent } from './handlers/messageHandlerOfficial';
+import { feishu } from './gateway/feishu';
+import { handleFeishuMessageEvent } from './handler';
 
 // Health check
 logger.info('🤖 OpenGate - AI Code Gateway');
 logger.info('✅ Starting Feishu WebSocket connection...');
 
 // Start WebSocket connection for real-time events
-feishuServiceOfficial.startWebSocketConnection(handleFeishuMessageEvent);
+feishu.startWebSocketConnection(handleFeishuMessageEvent);
 
 // Keep the process alive
 process.on('SIGINT', () => {

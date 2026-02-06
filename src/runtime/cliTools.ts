@@ -49,8 +49,8 @@ export class CLITools {
     const timeout = options.timeout ?? config.execution.opencodeTimeout ?? config.execution.timeout;
     const { onOutput, ...execOptions } = options;
 
-    // Stream stdout in real-time
-    const onStdout = onOutput ? (chunk: string) => {
+    // Clean and forward output chunk
+    const handleOutput = onOutput ? (chunk: string) => {
       const cleaned = chunk.replace(/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '').trim();
       if (cleaned) {
         logger.info(`📺 ${toolName}: ${cleaned.substring(0, 200)}`);
@@ -59,7 +59,13 @@ export class CLITools {
     } : undefined;
 
     try {
-      const result = await executor.execute(command, { ...execOptions, timeout, onStdout });
+      // Stream both stdout and stderr (progress info often goes to stderr)
+      const result = await executor.execute(command, { 
+        ...execOptions, 
+        timeout, 
+        onStdout: handleOutput,
+        onStderr: handleOutput,
+      });
       const duration = Date.now() - startTime;
 
       if (result.success) {

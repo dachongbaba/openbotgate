@@ -48,9 +48,9 @@ export async function handleFeishuMessageEvent(data: any): Promise<void> {
     const event = parseFeishuEvent(data, 'feishu');
     
     // Deduplicate: skip if we've already processed this message
-    // if (isDuplicateMessage(event.messageId)) {
-    //   return;
-    // }
+    if (isDuplicateMessage(event.messageId)) {
+      return;
+    }
     
     // Format sender info: channel + name (or just channel if no name)
     const sender = event.senderName 

@@ -1,250 +1,262 @@
 # OpenGate - Agent Guidelines
 
-本文档为AI编程代理（如OpenCode）提供代码库的操作指南和规范。
+AI 编程代理（OpenCode、Claude Code、Cursor 等）的代码库操作指南。
 
 ## 项目概述
 
-OpenGate是一个通过飞书/Lark机器人API远程执行AI编程CLI工具（OpenCode、Claude Code等）的网关服务。使用TypeScript开发，基于飞书官方SDK。
+OpenGate 是一个通过飞书/Lark 机器人 API 远程执行 AI 编程 CLI 工具的网关服务。
 
-## 构建和开发命令
-
-### 基本命令
-```bash
-# 安装依赖
-pnpm install
-
-# 开发模式（TypeScript热重载）
-npm run dev
-
-# 构建项目
-npm run build
-
-# 启动生产服务
-npm start
-
-# 调试模式
-npm run debug
-
-# 运行测试
-npm test
-```
-
-### 单文件测试
-项目使用Jest进行测试，测试文件位于 `test/` 目录。要运行单个测试文件：
-```bash
-# 如果package.json中有jest配置
-npx jest test/services/commandExecutor.test.ts --verbose
-
-# 或使用npm脚本（如果配置了）
-npm test -- test/services/commandExecutor.test.ts
-```
-
-### 类型检查和编译
-```bash
-# TypeScript类型检查
-npx tsc --noEmit
-
-# 编译并生成声明文件
-npx tsc
-```
-
-## 代码风格指南
-
-### 文件结构
-- 源代码位于 `src/` 目录
-- 测试位于 `test/` 目录（与 src 分离）
-- 编译输出位于 `dist/` 目录
-- 配置文件在 `src/config/`
-- 处理器在 `src/handlers/`
-- 服务在 `src/services/`
-- 工具类在 `src/utils/`
-
-### 导入顺序
-```typescript
-// 1. 第三方库
-import * as dotenv from 'dotenv';
-import winston from 'winston';
-
-// 2. 项目模块
-import logger from '../utils/logger';
-import { config } from '../config/config';
-
-// 3. 类型定义
-import { ToolResult, ExecutionOptions } from './types';
-```
-
-### 命名约定
-- **类名**: PascalCase（如 `CLITools`, `TaskManager`）
-- **变量/函数名**: camelCase（如 `executeCommand`, `maxRetries`）
-- **常量**: UPPER_SNAKE_CASE（如 `MAX_TIMEOUT`, `DEFAULT_PORT`）
-- **接口**: PascalCase（如 `BotConfig`, `ToolResult`）
-- **类型别名**: PascalCase（如 `ExecutionCallback`, `MessageHandler`）
-- **文件名**: camelCase或kebab-case（如 `cliTools.ts`, `message-handler.ts`）
-
-### 类型注解
-```typescript
-// 显式类型注解
-function calculateTotal(items: Item[]): number {
-  return items.reduce((sum, item) => sum + item.price, 0);
-}
-
-// 接口定义
-export interface ToolResult {
-  tool: string;
-  success: boolean;
-  output: string;
-  error?: string;  // 可选属性
-  duration: number;
-}
-
-// 类型别名
-export type ExecutionCallback = (result: ToolResult) => void;
-```
-
-### 错误处理
-```typescript
-// 使用try-catch处理异步错误
-try {
-  const result = await commandExecutor.execute(command, options);
-  return {
-    success: true,
-    output: result.stdout,
-    duration: Date.now() - startTime,
-  };
-} catch (error: any) {
-  logger.error(`Command execution failed: ${error.message}`);
-  return {
-    success: false,
-    output: '',
-    error: error.message,
-    duration: Date.now() - startTime,
-  };
-}
-
-// 使用类型守卫
-function isNetworkError(error: unknown): error is NetworkError {
-  return (error as NetworkError).code !== undefined;
-}
-```
-
-### 日志记录
-```typescript
-import logger from '../utils/logger';
-
-// 不同级别的日志
-logger.info('Service started successfully');
-logger.warn('Configuration missing, using defaults');
-logger.error('Failed to connect to Feishu API', { error: err });
-logger.debug('Debug information', { data: someData });
-```
-
-### 异步编程
-```typescript
-// 使用async/await
-async function processMessage(message: Message): Promise<Response> {
-  const parsed = await parseMessage(message);
-  const result = await executeTool(parsed.command);
-  return formatResponse(result);
-}
-
-// 处理Promise链
-function executeWithTimeout(
-  promise: Promise<any>,
-  timeout: number
-): Promise<any> {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout')), timeout)
-    ),
-  ]);
-}
-```
-
-### 配置管理
-- 使用 `src/config/config.ts` 中的 `loadConfig()` 函数
-- 环境变量通过 `.env` 文件管理
-- 配置类型通过 `BotConfig` 接口定义
-- 所有配置应通过 `config` 对象访问
-
-### 格式化规则
-- 使用2个空格缩进
-- 字符串使用单引号（`'`）
-- 语句末尾加分号
-- 对象和数组使用尾随逗号
-- 最大行长度：80-100字符
-
-## 项目特定约定
-
-### 飞书集成
-- 使用官方 `@larksuiteoapi/node-sdk`
-- WebSocket连接用于实时事件
-- 消息处理器在 `src/handlers/messageHandlerOfficial.ts`
-- 服务层在 `src/services/feishuServiceOfficial.ts`
-
-### CLI工具执行
-- 工具执行器在 `src/services/cliTools.ts`
-- 命令执行器在 `src/services/commandExecutor.ts`
-- 支持的工具：OpenCode、Claude Code、Git、Shell
-- Shell执行默认禁用（安全考虑）
-
-### 任务管理
-- 简化任务管理器在 `src/services/taskManagerSimple.ts`
-- 支持同步/异步执行模式
-- 任务状态跟踪和取消功能
-
-## 安全注意事项
-
-1. **Shell执行**: 默认禁用，仅在受信任环境中启用
-2. **超时限制**: 所有命令执行都有超时限制
-3. **输出限制**: 限制命令输出长度防止内存问题
-4. **敏感信息**: 使用环境变量存储凭证
-5. **输入验证**: 验证所有用户输入和命令
-
-## 扩展指南
-
-### 添加新工具
-1. 在 `src/services/cliTools.ts` 中添加新的执行方法
-2. 在 `BotConfig` 接口中添加配置项
-3. 在 `loadConfig()` 函数中添加环境变量解析
-4. 在消息处理器中注册新的命令
-
-### 添加新平台
-1. 在 `src/services/` 下创建平台适配器
-2. 实现消息接收和发送接口
-3. 在入口文件中注册webhook端点
-
-## 故障排除
-
-### 常见问题
-1. **飞书连接失败**: 检查App ID/Secret和网络配置
-2. **命令执行超时**: 调整 `EXECUTION_TIMEOUT` 环境变量
-3. **内存不足**: 检查 `MAX_OUTPUT_LENGTH` 设置
-4. **类型错误**: 运行 `npx tsc --noEmit` 检查类型
-
-### 调试技巧
-```bash
-# 启用详细日志
-DEBUG=true npm run dev
-
-# 检查编译输出
-npm run build && ls -la dist/
-
-# 测试单个功能
-npm run debug
-```
-
-## 最佳实践
-
-1. **代码复用**: 使用现有工具和服务，避免重复代码
-2. **错误处理**: 所有外部调用都应包含错误处理
-3. **日志记录**: 关键操作和错误都应记录日志
-4. **类型安全**: 充分利用TypeScript的类型系统
-5. **配置驱动**: 将可变参数提取到配置中
-6. **测试覆盖**: 为新功能添加单元测试
+- 仓库：本地开发
+- 技术栈：TypeScript, Node.js, Feishu SDK, Winston
+- 运行时：Node 20+
 
 ---
 
-**最后更新**: 2026-02-04  
-**项目版本**: 1.0.0  
-**技术栈**: TypeScript, Node.js, Feishu SDK, Winston
+## 项目结构
+
+```
+opengate/
+├── src/
+│   ├── index.ts           # 入口：加载 config、启动 gateway
+│   ├── config/            # 配置加载
+│   ├── gateway/           # 飞书连接与收发
+│   ├── handler/           # 消息解析、路由、命令
+│   │   ├── parse.ts       # 解析飞书 payload
+│   │   └── commands/      # 按命令拆分
+│   ├── runtime/           # 执行与任务
+│   │   ├── executor.ts    # 底层 spawn/超时
+│   │   ├── cliTools.ts    # opencode/claude/git 封装
+│   │   └── taskManager.ts # 任务队列与状态
+│   └── utils/             # 日志等工具
+├── test/                  # 测试（与 src 分离）
+├── AGENTS.md              # 本文件
+├── CONTRIBUTING.md        # 贡献指南
+└── package.json
+```
+
+---
+
+## 构建与开发
+
+```bash
+pnpm install          # 安装依赖
+npm run dev           # 开发模式（热重载）
+npm run build         # 构建
+npm start             # 生产启动
+npm test              # 运行测试
+npx tsc --noEmit      # 类型检查
+```
+
+单文件测试：`npx jest test/path/to/file.test.ts --verbose`
+
+---
+
+## 代码风格
+
+### 通用原则
+
+- 单文件 ~500 LOC 内；超过则拆分
+- 避免 `any`；依赖类型推断，必要时显式标注
+- 优先 `const`；用三元或 early return 代替 `let` + 赋值
+- 优先 early return；避免 `else`
+- 少用 `try/catch`；仅在必要边界处理错误
+- 函数内聚；仅在复用或组合时拆分
+
+### 命名
+
+- 变量/函数：camelCase，尽量单词简洁（`task` 优于 `taskItem`）
+- 类/接口/类型：PascalCase
+- 常量：UPPER_SNAKE_CASE
+- 文件：camelCase 或 kebab-case
+
+```typescript
+// Good
+const task = tasks.get(id)
+function execute(cmd: string) { ... }
+
+// Bad
+const currentTaskItem = tasks.get(id)
+function executeCommandWithOptions(cmd: string) { ... }
+```
+
+### 控制流
+
+```typescript
+// Good: early return
+function process(data: Data) {
+  if (!data.valid) return null
+  return transform(data)
+}
+
+// Bad: else
+function process(data: Data) {
+  if (data.valid) {
+    return transform(data)
+  } else {
+    return null
+  }
+}
+```
+
+### 错误处理
+
+在边界处捕获错误，内部逻辑尽量让错误冒泡：
+
+```typescript
+// 边界：handler 入口
+async function handleEvent(data: any): Promise<void> {
+  try {
+    const parsed = parseEvent(data)
+    await routeCommand(parsed)
+  } catch (error) {
+    logger.error('Event handling failed', { error })
+  }
+}
+
+// 内部：让错误冒泡
+function parseEvent(data: any): ParsedEvent {
+  const content = JSON.parse(data.message.content)
+  return { messageId: data.message.message_id, text: content.text }
+}
+```
+
+### 导入顺序
+
+```typescript
+// 1. Node/第三方
+import { spawn } from 'child_process'
+import * as Lark from '@larksuiteoapi/node-sdk'
+
+// 2. 项目模块
+import { config } from '../config/config'
+import logger from '../utils/logger'
+
+// 3. 类型（如需单独导入）
+import type { Task, ToolResult } from './types'
+```
+
+---
+
+## 模块职责
+
+| 目录 | 职责 |
+|------|------|
+| `gateway/` | 飞书 WebSocket 连接、发消息、回复；不处理业务逻辑 |
+| `handler/` | 解析 payload、路由命令；调用 runtime 执行 |
+| `handler/commands/` | 每个命令一个文件，导出 `run(ctx)` |
+| `runtime/` | CLI 工具封装、底层执行、任务队列 |
+| `config/` | 加载环境变量、导出 `config` 对象 |
+| `utils/` | 日志、通用工具函数 |
+
+---
+
+## 扩展指南
+
+### 添加新命令
+
+1. 在 `handler/commands/` 新建文件（如 `foo.ts`）
+2. 导出 `run(ctx: CommandContext): Promise<void>`
+3. 在 `handler/commands/index.ts` 注册
+
+```typescript
+// handler/commands/foo.ts
+export async function run(ctx: CommandContext): Promise<void> {
+  await ctx.reply('Hello from /foo')
+}
+
+// handler/commands/index.ts
+import { run as foo } from './foo'
+export const commands: Record<string, CommandHandler> = {
+  '/foo': foo,
+  // ...
+}
+```
+
+### 添加新 CLI 工具
+
+1. 在 `runtime/cliTools.ts` 添加执行方法
+2. 在 `config/config.ts` 的 `supportedTools` 添加开关
+3. 在 `runtime/taskManager.ts` 的 switch 添加 case
+
+### 添加新平台
+
+1. 在 `gateway/` 新建适配器（如 `slack.ts`）
+2. 实现连接、收发消息接口
+3. 在 `index.ts` 初始化并挂载 handler
+
+---
+
+## 安全注意事项
+
+1. **Shell 执行**：默认禁用，仅在 `TOOL_SHELL_ENABLED=true` 时启用
+2. **超时**：所有命令执行有超时限制（默认 120s，最大 180s）
+3. **输出截断**：限制输出长度防止内存问题
+4. **敏感信息**：使用 `.env` 存储凭证，不要提交
+5. **输入验证**：验证用户输入和命令参数
+
+---
+
+## Agent 专用注意事项
+
+### 多 Agent 安全
+
+当多个 agent 可能同时操作仓库时：
+
+- **不要**随意创建/应用/丢弃 `git stash`
+- **不要**随意切换分支或创建 worktree
+- **commit** 时只提交你的改动，不要 `git add .` 后盲目提交
+- **push** 前先 `git pull --rebase`，有冲突则停止并报告
+
+### 回复聚焦
+
+- 回复聚焦于你的编辑内容，不要长篇大论
+- 遇到未知文件时继续工作，仅在相关时简短提及
+- 高置信度回答；不确定时先验证代码
+
+### 文件操作
+
+- 读取文件前确认路径存在
+- 编辑前先读取（使用 Read tool）
+- 不要编辑 `node_modules`
+
+### 日志与调试
+
+```bash
+DEBUG=true npm run dev   # 启用详细日志
+npm run build && ls dist # 检查编译输出
+```
+
+---
+
+## Commit 与 PR
+
+- 遵循 Conventional Commits：`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`
+- PR 小而聚焦，一个 PR 一件事
+- 逻辑变更需说明如何验证
+- 参考 [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+---
+
+## 测试
+
+- 框架：Jest
+- 测试文件：`test/**/*.test.ts`
+- 运行：`npm test`
+- 单文件：`npx jest test/path.test.ts --verbose`
+
+测试真实实现，避免过度 mock。
+
+---
+
+## 故障排除
+
+| 问题 | 解决方案 |
+|------|----------|
+| 飞书连接失败 | 检查 `FEISHU_APP_ID`/`FEISHU_APP_SECRET` 和网络 |
+| 命令执行超时 | 调整 `EXECUTION_TIMEOUT` 环境变量 |
+| 内存不足 | 检查 `MAX_OUTPUT_LENGTH` 设置 |
+| 类型错误 | 运行 `npx tsc --noEmit` |
+
+---
+
+**最后更新**: 2026-02-05

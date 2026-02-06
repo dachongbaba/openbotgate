@@ -2,12 +2,11 @@ import logger from '../utils/logger';
 import * as Lark from '@larksuiteoapi/node-sdk';
 import { config } from '../config/config';
 
-export class FeishuServiceOfficial {
+export class FeishuGateway {
   private client: Lark.Client;
   private eventDispatcher: Lark.EventDispatcher;
 
   constructor() {
-    // Initialize the official Feishu SDK client
     this.client = new Lark.Client({
       appId: config.feishu.appId,
       appSecret: config.feishu.appSecret,
@@ -20,7 +19,6 @@ export class FeishuServiceOfficial {
     });
   }
 
-  // Register message event handler
   registerMessageHandler(handler: (data: any) => Promise<void>) {
     this.eventDispatcher.register({
       'im.message.receive_v1': async (data) => {
@@ -29,12 +27,10 @@ export class FeishuServiceOfficial {
     });
   }
 
-  // Get event dispatcher for Express middleware
   getEventDispatcher(): Lark.EventDispatcher {
     return this.eventDispatcher;
   }
 
-  // Send text message
   async sendTextMessage(receiveId: string, receiveIdType: string, text: string): Promise<void> {
     try {
       await this.client.im.message.create({
@@ -48,12 +44,11 @@ export class FeishuServiceOfficial {
         },
       });
     } catch (error) {
-      console.error('Failed to send text message:', error);
+      logger.error('Failed to send text message:', error);
       throw error;
     }
   }
 
-  // Send rich text message (post)
   async sendRichTextMessage(
     receiveId: string,
     receiveIdType: string,
@@ -86,12 +81,11 @@ export class FeishuServiceOfficial {
         },
       });
     } catch (error) {
-      console.error('Failed to send rich text message:', error);
+      logger.error('Failed to send rich text message:', error);
       throw error;
     }
   }
 
-  // Reply to a message
   async replyToMessage(messageId: string, text: string): Promise<void> {
     try {
       await this.client.im.message.reply({
@@ -104,12 +98,11 @@ export class FeishuServiceOfficial {
         },
       });
     } catch (error) {
-      console.error('Failed to reply to message:', error);
+      logger.error('Failed to reply to message:', error);
       throw error;
     }
   }
 
-  // Get message details
   async getMessage(messageId: string): Promise<any> {
     try {
       const response = await this.client.im.message.get({
@@ -119,12 +112,11 @@ export class FeishuServiceOfficial {
       });
       return response.data;
     } catch (error) {
-      console.error('Failed to get message:', error);
+      logger.error('Failed to get message:', error);
       throw error;
     }
   }
 
-  // Start WebSocket connection for real-time events
   startWebSocketConnection(messageHandler: (data: any) => Promise<void>): void {
     const wsClient = new Lark.WSClient({
       appId: config.feishu.appId,
@@ -143,4 +135,4 @@ export class FeishuServiceOfficial {
   }
 }
 
-export const feishuServiceOfficial = new FeishuServiceOfficial();
+export const feishu = new FeishuGateway();

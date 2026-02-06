@@ -75,7 +75,7 @@ npm start
 
 ```
 /opencode <prompt>    # 执行 OpenCode
-/claude <prompt>     # 执行 Claude Code
+/claudecode <prompt> # 执行 Claude Code
 /git <command>       # 执行 Git 命令
 /shell <command>     # 执行 Shell 命令（需要启用）
 ```
@@ -103,7 +103,7 @@ npm start
 
 /git status
 
-/claude 为这个项目生成单元测试
+/claudecode 为这个项目生成单元测试
 
 /sync opencode 总结这段代码的含义
 
@@ -132,33 +132,85 @@ npm start
 ```
 opengate/
 ├── src/
-│   ├── config/           # 配置文件
+│   ├── config/           # 配置管理
 │   │   └── config.ts
-│   ├── handlers/         # 消息处理器
-│   │   └── messageHandlerOfficial.ts   # 使用官方SDK的消息处理器
-│   ├── services/         # 业务服务
-│   │   ├── cliTools.ts
-│   │   ├── commandExecutor.ts
-│   │   ├── feishuServiceOfficial.ts    # 使用官方SDK的飞书服务
-│   │   └── taskManagerSimple.ts        # 简化的任务管理器
-│   └── indexOfficial.ts  # 入口文件（使用官方SDK版本）
+│   ├── gateway/          # 外部平台网关
+│   │   └── feishu.ts     # 飞书API集成
+│   ├── handler/          # 消息处理
+│   │   ├── index.ts      # 路由入口
+│   │   ├── parse.ts      # 消息解析
+│   │   ├── types.ts      # 类型定义
+│   │   └── commands/     # 命令处理器
+│   │       ├── index.ts  # 命令注册
+│   │       ├── utils.ts  # 共享工具
+│   │       ├── opencode.ts
+│   │       ├── claude.ts
+│   │       ├── git.ts
+│   │       ├── shell.ts
+│   │       ├── sync.ts
+│   │       ├── async.ts
+│   │       ├── tasks.ts
+│   │       ├── cancel.ts
+│   │       ├── status.ts
+│   │       └── help.ts
+│   ├── runtime/          # 运行时服务
+│   │   ├── executor.ts   # 命令执行器
+│   │   ├── cliTools.ts   # CLI工具封装
+│   │   └── taskManager.ts # 任务管理
+│   ├── utils/            # 通用工具
+│   │   └── logger.ts
+│   └── index.ts          # 入口文件
+├── test/                 # 测试文件
+│   ├── handler/
+│   └── runtime/
+├── AGENTS.md             # AI编程指南
+├── CONTRIBUTING.md       # 贡献指南
 ├── package.json
 ├── tsconfig.json
-├── .env.example
-└── README.md
+└── .env.example
 ```
+
+## 架构设计
+
+项目采用分层架构，职责清晰：
+
+- **gateway/** - 外部平台集成层，隔离第三方API
+- **handler/** - 消息处理层，解析路由命令
+- **runtime/** - 运行时层，执行CLI工具和管理任务
+- **config/** - 配置层，统一管理环境变量
 
 ## 扩展支持
 
 ### 添加新的聊天平台
 
-1. 在 `src/services/` 目录下创建新平台的适配器
-2. 实现消息接收和发送接口
-3. 在 `src/index.ts` 中注册新的 webhook 端点
+1. 在 `src/gateway/` 下创建新平台适配器
+2. 实现消息发送接口
+3. 在 `src/index.ts` 中注册 webhook 端点
+
+### 添加新的命令
+
+在 `src/handler/commands/` 下创建新文件：
+
+```typescript
+// src/handler/commands/mycommand.ts
+import type { CommandContext } from '../types';
+
+export async function run(ctx: CommandContext): Promise<void> {
+  // 实现逻辑
+  await ctx.reply('Done');
+}
+```
+
+然后在 `src/handler/commands/index.ts` 中注册：
+
+```typescript
+import { run as mycommand } from './mycommand';
+commands.set('mycommand', mycommand);
+```
 
 ### 添加新的 CLI 工具
 
-在 `src/services/cliTools.ts` 中添加新的执行方法：
+在 `src/runtime/cliTools.ts` 中添加新方法：
 
 ```typescript
 async executeNewTool(

@@ -91,7 +91,7 @@ export class CLITools {
         }
       : undefined;
 
-    const result = await executor.execute(command, { ...execOptions, onStdout });
+    const result = await executor.execute(command, { ...execOptions, onStdout, useShellEncoding: true });
     const duration = Date.now() - startTime;
 
     return {

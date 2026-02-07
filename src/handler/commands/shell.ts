@@ -29,6 +29,13 @@ export function splitString(str: string, maxLength: number): string[] {
   return chunks;
 }
 
+/** Log shell command and output for a result. Call before "✅ 完成". One line: command + newline + output (if any). */
+function logOutputLines(result: ToolResult, command: string): void {
+  const output = result.success ? result.output : result.error;
+  const body = output && output.trim() !== '' ? `${command}\n${output}` : command;
+  logger.info(`📺 ${result.tool}: ${body}`);
+}
+
 /**
  * Format and send execution result
  */
@@ -51,9 +58,6 @@ async function sendResult(
   const maxLength = 8000;
   const chunks = splitString(output, maxLength);
 
-  const logPreviewLen = 300;
-  const outputPreview = output.length > logPreviewLen ? output.slice(0, logPreviewLen) + '...' : output;
-
   for (let i = 0; i < chunks.length; i++) {
     const prefix = i === 0
       ? `📦 *${result.tool} Output* (${result.duration}ms)\n\n`
@@ -64,9 +68,12 @@ async function sendResult(
     if (process.env.DEBUG === 'true') {
       logger.debug(messageContent);
     } else {
-      logger.info(`💬 Reply: ${result.tool} output chunk ${i + 1}/${chunks.length}`);
-      if (i === 0) logger.info(`📦 ${result.tool} output (${result.duration}ms): ${outputPreview.replace(/\n/g, ' ')}`);
-      await reply(messageContent);
+      try {
+        await reply(messageContent);
+      } catch (err) {
+        logger.error(`Reply failed for ${result.tool} chunk ${i + 1}:`, err);
+        throw err;
+      }
     }
 
     if (i < chunks.length - 1) {
@@ -93,11 +100,16 @@ async function runShell(ctx: CommandContext, commandName: string): Promise<void>
   const result = await taskManager.executeTask(task.id);
 
   if (result) {
+    logOutputLines(result, command);
     const duration = formatDuration(result.duration);
     if (result.success) {
       logger.info(`✅ shell (${commandName}) 完成 (${duration})`);
     } else {
       logger.info(`❌ shell (${commandName}) 失败 (${duration})`);
+    }
+    const outLen = result.output?.length ?? 0;
+    if (outLen > 0 && process.env.DEBUG === 'true') {
+      logger.debug(`shell result.output length=${outLen}, preview: ${result.output!.slice(0, 80).replace(/\n/g, ' ')}`);
     }
     await sendResult(result, ctx.reply);
   }

@@ -21,6 +21,10 @@ const DEFAULT_ALLOWED_CODE_TOOLS = [
 const DEFAULT_ALLOWED_SHELL_COMMANDS = ['git', 'dir', 'ls', 'pwd'];
 
 export interface BotConfig {
+  /** Active gateway type (feishu, lark, telegram, etc.). Only feishu is implemented. */
+  gateway: {
+    type: string;
+  };
   feishu: {
     appId: string;
     appSecret: string;
@@ -45,8 +49,17 @@ function parseStringList(envValue: string | undefined, defaultList: string[]): s
   return envValue.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
 }
 
+function normalizeGatewayType(raw: string | undefined): string {
+  const v = (raw ?? '').trim().toLowerCase();
+  if (v === 'lark') return 'feishu';
+  return v || 'feishu';
+}
+
 export function loadConfig(): BotConfig {
   return {
+    gateway: {
+      type: normalizeGatewayType(process.env.GATEWAY_TYPE),
+    },
     feishu: {
       appId: process.env.FEISHU_APP_ID || '',
       appSecret: process.env.FEISHU_APP_SECRET || '',

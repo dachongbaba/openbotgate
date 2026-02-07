@@ -1,5 +1,6 @@
 import type { CommandContext } from '../types';
-import { taskManager } from '../../runtime/taskManager';
+import { toolRegistry } from '../../runtime/tools/registry';
+import { sessionManager } from '../../runtime/sessionManager';
 import logger, { formatDuration } from '../../utils/logger';
 
 /** Throttle interval for streaming output (ms) */
@@ -18,17 +19,16 @@ function createStreamHandler(reply: (text: string) => Promise<void>) {
       const content = buffer;
       buffer = '';
       lastSendTime = Date.now();
-      await reply(content).catch(() => {}); // Ignore reply errors
+      await reply(content).catch(() => {});
     }
   };
 
   const onOutput = (chunk: string) => {
     buffer += (buffer ? '\n' : '') + chunk;
-    
+
     const now = Date.now();
     const timeSinceLastSend = now - lastSendTime;
-    
-    // If enough time has passed, send immediately
+
     if (timeSinceLastSend >= STREAM_THROTTLE_MS) {
       if (pendingTimeout) {
         clearTimeout(pendingTimeout);
@@ -36,7 +36,6 @@ function createStreamHandler(reply: (text: string) => Promise<void>) {
       }
       flush();
     } else if (!pendingTimeout) {
-      // Schedule a send for when the throttle window expires
       pendingTimeout = setTimeout(() => {
         pendingTimeout = null;
         flush();
@@ -44,7 +43,6 @@ function createStreamHandler(reply: (text: string) => Promise<void>) {
     }
   };
 
-  // Flush any remaining content
   const complete = async () => {
     if (pendingTimeout) {
       clearTimeout(pendingTimeout);
@@ -56,44 +54,60 @@ function createStreamHandler(reply: (text: string) => Promise<void>) {
   return { onOutput, complete };
 }
 
-export async function run(ctx: CommandContext): Promise<void> {
-  const prompt = ctx.args.trim();
-
+/**
+ * Generic prompt executor.
+ * Uses the user's current tool from SessionManager, executes prompt with session/model/agent.
+ * Called by /opencode, default message handler, and /code one-shot.
+ */
+export async function executePrompt(
+  ctx: CommandContext,
+  prompt: string,
+  toolNameOverride?: string
+): Promise<void> {
   if (!prompt) {
-    if (process.env.DEBUG === 'true') {
-      logger.debug('Usage: /opencode <prompt>\nExample: /opencode Write a hello world function');
-      return;
-    }
-    logger.info('💬 Reply: Usage: /opencode <prompt>');
-    await ctx.reply('Usage: /opencode <prompt>\nExample: /opencode Write a hello world function');
+    logger.info('💬 Reply: Usage: send a prompt to execute');
+    await ctx.reply('Usage: /opencode <prompt>\nOr just send a message directly.');
     return;
   }
 
-  // Step 1: Immediate acknowledgment
-  if (process.env.DEBUG === 'true') {
-    logger.debug('Running OpenCode...');
-  } else {
-    logger.info('🚀 Running OpenCode...');
-    // await ctx.reply('🤖 Running OpenCode...');
+  const session = sessionManager.getSession(ctx.senderId);
+  const toolName = toolNameOverride || session.tool;
+  const adapter = toolRegistry.get(toolName);
+
+  if (!adapter) {
+    await ctx.reply(`Tool "${toolName}" is not available. Use /code to switch tools.`);
+    return;
   }
 
-  // Step 2: Execute with streaming output
-  const streamHandler = createStreamHandler(ctx.reply);
-  const task = await taskManager.createTask(ctx.senderId, prompt, 'opencode');
-  const result = await taskManager.executeTask(task.id, streamHandler.onOutput);
+  logger.info(`🚀 Running ${adapter.displayName}...`);
 
-  // Step 3: Flush remaining output
+  const streamHandler = createStreamHandler(ctx.reply);
+  const result = await adapter.execute(prompt, {
+    sessionId: session.sessionId ?? undefined,
+    model: session.model ?? undefined,
+    agent: session.agent ?? undefined,
+    cwd: session.cwd ?? undefined,
+    onOutput: streamHandler.onOutput,
+  });
+
   await streamHandler.complete();
 
-  // Step 4: Send completion status
-  if (result) {
-    const duration = formatDuration(result.duration);
-    if (result.success) {
-      logger.info(`✅ OpenCode 完成 (${duration})`);
-      // await ctx.reply(`✅ *OpenCode 完成* (${duration})`);
-    } else {
-      logger.info(`❌ OpenCode 失败 (${duration})`);
-      // await ctx.reply(`❌ *OpenCode 失败* (${duration})\n${result.error || 'Unknown error'}`);
-    }
+  // Capture session ID for future continuation
+  if (result.sessionId) {
+    sessionManager.updateSession(ctx.senderId, { sessionId: result.sessionId });
   }
+
+  const duration = formatDuration(result.duration);
+  if (result.success) {
+    logger.info(`✅ ${adapter.displayName} 完成 (${duration})`);
+  } else {
+    logger.info(`❌ ${adapter.displayName} 失败 (${duration})`);
+  }
+}
+
+/**
+ * /opencode command handler - delegates to executePrompt
+ */
+export async function run(ctx: CommandContext): Promise<void> {
+  await executePrompt(ctx, ctx.args.trim(), 'opencode');
 }

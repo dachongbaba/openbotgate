@@ -30,6 +30,12 @@ export interface BotConfig {
     opencode: boolean;
     shell: boolean;
     git: boolean;
+    claudecode: boolean;
+    codex: boolean;
+    qwencode: boolean;
+    kimi: boolean;
+    openclaw: boolean;
+    nanobot: boolean;
   };
 }
 
@@ -65,6 +71,12 @@ export function loadConfig(): BotConfig {
       opencode: process.env.TOOL_OPENCODE_ENABLED !== 'false',
       shell: process.env.TOOL_SHELL_ENABLED === 'true',
       git: process.env.TOOL_GIT_ENABLED === 'true',
+      claudecode: process.env.TOOL_CLAUDECODE_ENABLED !== 'false',
+      codex: process.env.TOOL_CODEX_ENABLED !== 'false',
+      qwencode: process.env.TOOL_QWENCODE_ENABLED !== 'false',
+      kimi: process.env.TOOL_KIMI_ENABLED !== 'false',
+      openclaw: process.env.TOOL_OPENCLAW_ENABLED !== 'false',
+      nanobot: process.env.TOOL_NANOBOT_ENABLED !== 'false',
     },
   };
 }

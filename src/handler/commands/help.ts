@@ -6,26 +6,34 @@ const HELP_TEXT = `
 
 Available Commands:
 
-*Tool Execution:*
-• \`/opencode <prompt>\` - Execute OpenCode with prompt
-• \`/git <command>\` - Execute Git command
-• \`/shell <command>\` - Execute Shell command (if enabled)
+*Tool Management:*
+• \`/code\` - Show current tool / list available tools
+• \`/code <tool>\` - Switch default tool (opencode, claude, codex, qwen, kimi, openclaw, nanobot)
+• \`/code <tool> "prompt"\` - One-shot execute with specified tool
 
-*Execution Mode:*
-• \`/sync <tool> <command>\` - Execute synchronously, wait for result
-• \`/async <tool> <command>\` - Execute asynchronously, notify when done
+*Session Management:*
+• \`/new\` - Start new session (clear history)
+• \`/session\` - List sessions
+• \`/session <id>\` - Switch to session
+• \`/model\` - List models
+• \`/model <name>\` - Set model
+• \`/agent\` - List agents
+• \`/agent <name>\` - Set agent
+• \`/workspace\` - Show working directory
+• \`/workspace <path>\` - Set working directory
+
+*Direct Execution:*
+• \`/opencode <prompt>\` - Execute with OpenCode
+• \`/git <command>\` - Execute Git command
+• \`/sync <tool> <command>\` - Sync execution
+• \`/async <tool> <command>\` - Async execution
 
 *Task Management:*
 • \`/status\` - Show system status
-• \`/tasks\` - List your running tasks
-• \`/cancel <task_id>\` - Cancel a running task
-• \`/new\` - Start new conversation (clear history)
+• \`/tasks\` - List running tasks
+• \`/cancel <task_id>\` - Cancel a task
 
-*Examples:*
-• \`/opencode Write a function to calculate fibonacci\`
-• \`/git status\`
-• \`/sync opencode Summarize this code\`
-• \`/async opencode Generate unit tests for all files\`
+*Tip:* Send a message without / to execute with current tool (default: opencode).
 `;
 
 export async function run(ctx: CommandContext): Promise<void> {

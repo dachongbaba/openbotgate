@@ -1,4 +1,5 @@
-import { handleFeishuMessageEvent } from './handler';
+import { getGateway } from './gateway/registry';
+import { handleMessageEvent } from './handler';
 import logger from './utils/logger';
 
 // Set debug mode
@@ -8,23 +9,23 @@ process.env.DEBUG = 'true';
 async function debugMode() {
   logger.info('OpenGate Debug Mode');
   logger.info('Simulating message processing...');
-  
-  // Simulate a Feishu message event
+
+  const gateway = getGateway('feishu');
   const mockMessage = {
     message: {
       message_id: 'mock_msg_123',
       chat_id: 'mock_chat_456',
       content: '{"text":"写一个hello world函数"}',
-      message_type: 'text'
+      message_type: 'text',
     },
     sender: {
       sender_id: {
-        open_id: 'mock_user_789'
-      }
-    }
+        open_id: 'mock_user_789',
+      },
+    },
   };
 
-  await handleFeishuMessageEvent(mockMessage);
+  await handleMessageEvent(gateway, mockMessage);
 }
 
 // Run debug mode directly

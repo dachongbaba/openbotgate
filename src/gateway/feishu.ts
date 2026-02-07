@@ -1,6 +1,7 @@
 import logger from '../utils/logger';
 import * as Lark from '@larksuiteoapi/node-sdk';
 import { config } from '../config/config';
+import type { IGateway } from './types';
 
 // Custom logger adapter for Feishu SDK (filter verbose messages)
 let wsReady = false;
@@ -23,9 +24,26 @@ const sdkLogger = {
   error: (...args: any[]) => { logger.error(`[feishu] ${args.join(' ')}`); },
 };
 
-export class FeishuGateway {
+const NAME_CACHE_MAX = 2000;
+
+export class FeishuGateway implements IGateway {
+  readonly id = 'feishu';
   private client?: Lark.Client;
   private eventDispatcher?: Lark.EventDispatcher;
+  private userNames = new Map<string, string>();
+  private chatNames = new Map<string, string>();
+
+  start(messageHandler: (data: unknown) => Promise<void>): void {
+    this.startWebSocketConnection(messageHandler as (data: any) => Promise<void>);
+  }
+
+  async reply(messageId: string, text: string): Promise<void> {
+    return this.replyToMessage(messageId, text);
+  }
+
+  async send(chatId: string, chatIdType: string, title: string, content: string): Promise<void> {
+    return this.sendRichTextMessage(chatId, chatIdType, title, content);
+  }
 
   /** Lazy init client on first use */
   private getClient(): Lark.Client {
@@ -142,6 +160,73 @@ export class FeishuGateway {
     } catch (error) {
       logger.error('Failed to get message:', error);
       throw error;
+    }
+  }
+
+  /**
+   * 根据 open_id 或 user_id 获取用户名称，带内存缓存。
+   * 先试 open_id 再试 user_id，任一命中即返回；结果会同时写入两个 id 的缓存。
+   */
+  /** 用户名为空时返回的占位符 */
+  private static readonly EMPTY_USER_NAME = 'null';
+
+  async getUserName(ids: { openId?: string; userId?: string }): Promise<string> {
+    const { openId, userId } = ids;
+    if (!openId && !userId) return '';
+    if (openId && this.userNames.get(openId) !== undefined) return this.userNames.get(openId)!;
+    if (userId && this.userNames.get(userId) !== undefined) return this.userNames.get(userId)!;
+
+    let name = '';
+    if (openId) {
+      try {
+        const res = await this.getClient().contact.user.get({
+          params: { user_id_type: 'open_id' },
+          path: { user_id: openId },
+        });
+        name = typeof res?.data?.user?.name === 'string' ? res.data.user.name : '';
+      } catch {
+        name = '';
+      }
+      const out = name || FeishuGateway.EMPTY_USER_NAME;
+      if (this.userNames.size >= NAME_CACHE_MAX) this.userNames.clear();
+      this.userNames.set(openId, out);
+      if (userId && userId !== openId) this.userNames.set(userId, out);
+      if (name) return name;
+    }
+    if (userId) {
+      try {
+        const res = await this.getClient().contact.user.get({
+          params: { user_id_type: 'user_id' },
+          path: { user_id: userId },
+        });
+        name = typeof res?.data?.user?.name === 'string' ? res.data.user.name : '';
+      } catch {
+        name = '';
+      }
+      const out = name || FeishuGateway.EMPTY_USER_NAME;
+      if (this.userNames.size >= NAME_CACHE_MAX) this.userNames.clear();
+      this.userNames.set(userId, out);
+      if (openId && openId !== userId) this.userNames.set(openId, out);
+    }
+    return name || FeishuGateway.EMPTY_USER_NAME;
+  }
+
+  /** 根据 chat_id 获取群名称，带内存缓存，失败返回空字符串 */
+  async getChatName(chatId: string): Promise<string> {
+    if (!chatId) return '';
+    const cached = this.chatNames.get(chatId);
+    if (cached !== undefined) return cached;
+    try {
+      const res = await this.getClient().im.chat.get({
+        path: { chat_id: chatId },
+      });
+      const name = typeof res?.data?.name === 'string' ? res.data.name : '';
+      if (this.chatNames.size >= NAME_CACHE_MAX) this.chatNames.clear();
+      this.chatNames.set(chatId, name);
+      return name;
+    } catch {
+      this.chatNames.set(chatId, '');
+      return '';
     }
   }
 

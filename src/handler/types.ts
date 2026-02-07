@@ -4,7 +4,11 @@
 export interface ParsedEvent {
   messageId: string;
   chatId: string;
+  /** 用于会话标识，优先 open_id */
   senderId: string;
+  /** open_id / user_id 分别用于 contact.user.get 不同 id_type */
+  senderOpenId?: string;
+  senderUserId?: string;
   senderName?: string;
   chatType?: string;  // p2p, group
   channel: string;    // feishu, lark

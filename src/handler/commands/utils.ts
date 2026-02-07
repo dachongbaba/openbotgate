@@ -1,4 +1,5 @@
 import type { ToolResult } from '../../runtime/cliTools';
+import logger from '../../utils/logger';
 
 /**
  * Format and send execution result
@@ -11,9 +12,10 @@ export async function sendResult(
 
   if (!output || output.trim() === '') {
     if (process.env.DEBUG === 'true') {
-      console.log(`ℹ️  No output from ${result.tool}.`);
+      logger.debug(`No output from ${result.tool}.`);
       return;
     }
+    logger.info(`💬 Reply: No output from ${result.tool}.`);
     await reply(`No output from ${result.tool}.`);
     return;
   }
@@ -29,8 +31,9 @@ export async function sendResult(
     const messageContent = prefix + chunks[i];
 
     if (process.env.DEBUG === 'true') {
-      console.log(messageContent);
+      logger.debug(messageContent);
     } else {
+      logger.info(`💬 Reply: ${result.tool} output chunk ${i + 1}/${chunks.length}`);
       await reply(messageContent);
     }
 

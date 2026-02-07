@@ -53,7 +53,7 @@ export class CLITools {
     const handleOutput = onOutput ? (chunk: string) => {
       const cleaned = chunk.replace(/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '').trim();
       if (cleaned) {
-        logger.info(`📺 ${toolName}: ${cleaned.substring(0, 200)}`);
+        logger.info(`📺 ${toolName}: ${cleaned}`);
         onOutput(cleaned);
       }
     } : undefined;
@@ -105,7 +105,7 @@ export class CLITools {
     const onStdout = onOutput ? (chunk: string) => {
       const cleaned = chunk.trim();
       if (cleaned) {
-        logger.info(`📺 shell: ${cleaned.substring(0, 200)}`);
+        logger.info(`📺 shell: ${cleaned}`);
         onOutput(cleaned);
       }
     } : undefined;
@@ -139,7 +139,7 @@ export class CLITools {
     const onStdout = onOutput ? (chunk: string) => {
       const cleaned = chunk.trim();
       if (cleaned) {
-        logger.info(`📺 git: ${cleaned.substring(0, 200)}`);
+        logger.info(`📺 git: ${cleaned}`);
         onOutput(cleaned);
       }
     } : undefined;

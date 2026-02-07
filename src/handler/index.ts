@@ -58,11 +58,12 @@ export async function handleFeishuMessageEvent(data: any): Promise<void> {
       : event.channel;
     logger.info(`👤 ${sender}: ${event.text}`);
 
-    // Build command context
+    // Build command context (command name set later in processCommand)
     const ctx: CommandContext = {
       senderId: event.senderId,
       chatId: event.chatId,
       messageId: event.messageId,
+      command: '',
       args: '',
       reply: (text: string) => feishu.replyToMessage(event.messageId, text),
       send: (title: string, content: string) =>
@@ -83,21 +84,28 @@ export async function handleFeishuMessageEvent(data: any): Promise<void> {
  * Process command asynchronously (runs in background)
  */
 async function processCommand(ctx: CommandContext, text: string): Promise<void> {
+  const rawReply = ctx.reply;
+
   if (text.startsWith('/')) {
     const { cmd, args } = parseCommand(text);
+    ctx.command = cmd.replace('/', '');
     ctx.args = args;
 
     const handler = getCommand(cmd);
     if (handler) {
       logger.info(`🔧 Command: ${cmd} ${args ? args.substring(0, 30) + (args.length > 30 ? '...' : '') : ''}`);
+      ctx.reply = (text: string) => rawReply(`[${ctx.command}] ${text}`);
       await handler(ctx);
     } else {
       logger.warn(`❓ Unknown command: ${cmd}`);
-      await ctx.reply(`Unknown command: ${cmd}\nUse /help to see available commands.`);
+      logger.info(`💬 Reply: Unknown command: ${cmd}`);
+      await rawReply(`Unknown command: ${cmd}\nUse /help to see available commands.`);
     }
   } else {
     // Default: execute as OpenCode prompt
+    ctx.command = 'opencode';
     ctx.args = text;
+    ctx.reply = (text: string) => rawReply(`[${ctx.command}] ${text}`);
     await executeOpenCode(ctx);
   }
 }

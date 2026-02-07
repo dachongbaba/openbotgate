@@ -12,7 +12,7 @@ const sdkLogger = {
     // Mark ready when any "ready" message from SDK
     if (!wsReady && (msg.includes('ready') || msg.includes('connected'))) {
       wsReady = true;
-      logger.info('✅ Feishu WS ready');
+      logger.info('🟢 Feishu WS ready');
     }
     // Filter out verbose/duplicate SDK messages
     if (msg.includes('event-dispatch')) return;

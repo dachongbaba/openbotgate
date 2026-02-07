@@ -16,6 +16,8 @@ export interface ExecutionOptions {
   env?: Record<string, string>;
   onStdout?: (data: string) => void;
   onStderr?: (data: string) => void;
+  /** When true, decode stdout/stderr with shell encoding (SHELL_OUTPUT_ENCODING/LANG). When false, use UTF-8 (for code tools like opencode). */
+  useShellEncoding?: boolean;
 }
 
 export class CommandExecutor {
@@ -55,14 +57,15 @@ export class CommandExecutor {
         }, 5000);
       }, timeout);
 
+      const decode = options.useShellEncoding ? decodeShellChunk : (b: Buffer) => b.toString('utf8');
       child.stdout?.on('data', (data: Buffer) => {
-        const chunk = decodeShellChunk(data);
+        const chunk = decode(data);
         stdout += chunk;
         options.onStdout?.(chunk);
       });
 
       child.stderr?.on('data', (data: Buffer) => {
-        const chunk = decodeShellChunk(data);
+        const chunk = decode(data);
         stderr += chunk;
         options.onStderr?.(chunk);
       });

@@ -3,8 +3,8 @@ import { config } from '../config/config';
 
 /**
  * Shell output decoding for globally distributed apps (GitHub, npm).
- * Uses SHELL_OUTPUT_ENCODING (config) or LANG/LC_* (Unix). On Windows, chcp is not used
- * (pwsh vs cmd give different results); set SHELL_OUTPUT_ENCODING=gbk in .env when needed.
+ * Only used for shell commands (dir, git, etc.). Code tools (opencode, etc.) output UTF-8.
+ * Uses SHELL_OUTPUT_ENCODING (config) or LANG/LC_*. Set SHELL_OUTPUT_ENCODING=gbk when needed.
  */
 
 /** Locale encoding part (e.g. zh_CN.UTF-8 → utf8) → iconv encoding name. */
@@ -47,11 +47,7 @@ function getEncodingFromLocale(): string | null {
   return map[part] ?? (part.startsWith('iso8859') ? `iso-8859-${part.slice(7)}` : null) ?? null;
 }
 
-/**
- * On Windows we do not run chcp: from pwsh "cmd /c chcp" returns 65001 (inherited),
- * while actual shell output may be 936 (GBK). Use SHELL_OUTPUT_ENCODING in .env instead.
- */
-/** Resolved encoding: config override (SHELL_OUTPUT_ENCODING) > LANG/LC_* > utf8. */
+/** Resolved encoding for shell output only: config (SHELL_OUTPUT_ENCODING) > LANG/LC_* > utf8. */
 function getShellEncoding(): string {
   const over = config.execution.shellOutputEncoding?.toLowerCase();
   if (over && iconv.encodingExists(over)) return over;

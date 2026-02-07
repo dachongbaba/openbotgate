@@ -1,6 +1,7 @@
 import logger from './utils/logger';
-import { feishu } from './gateway/feishu';
-import { handleFeishuMessageEvent } from './handler';
+import { config } from './config/config';
+import { getGateway } from './gateway/registry';
+import { handleMessageEvent } from './handler';
 import { toolRegistry, registerAll } from './runtime/tools';
 
 logger.info('🤖 OpenGate - AI Code Gateway starting...');
@@ -8,7 +9,9 @@ logger.info('🤖 OpenGate - AI Code Gateway starting...');
 registerAll(toolRegistry);
 logger.info(`📦 ${toolRegistry.getEnabled().length} tools registered`);
 
-feishu.startWebSocketConnection(handleFeishuMessageEvent);
+const gateway = getGateway(config.gateway.type);
+logger.info(`🔌 Gateway: ${gateway.id}`);
+gateway.start((data) => handleMessageEvent(gateway, data));
 
 process.on('SIGINT', () => {
   logger.info('👋 Shutting down...');

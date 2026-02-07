@@ -29,11 +29,11 @@ export function splitString(str: string, maxLength: number): string[] {
   return chunks;
 }
 
-/** Log shell command and output for a result. Call before "✅ 完成". One line: command + newline + output (if any). */
-function logOutputLines(result: ToolResult, command: string): void {
+/** 输出到控制台和当日日志文件（原样，无时间戳）。 */
+function printOutput(result: ToolResult, command: string): void {
   const output = result.success ? result.output : result.error;
-  const body = output && output.trim() !== '' ? `${command}\n${output}` : command;
-  logger.info(`📺 ${result.tool}: ${body}`);
+  process.stdout.write(output + '\n');
+  logger.writeRawToFile(output + '\n');
 }
 
 /**
@@ -100,7 +100,7 @@ async function runShell(ctx: CommandContext, commandName: string): Promise<void>
   const result = await taskManager.executeTask(task.id);
 
   if (result) {
-    logOutputLines(result, command);
+    printOutput(result, command);
     const duration = formatDuration(result.duration);
     if (result.success) {
       logger.info(`✅ shell (${commandName}) 完成 (${duration})`);

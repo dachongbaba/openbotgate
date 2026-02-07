@@ -1,61 +1,81 @@
+import type { IGateway } from '../gateway/types';
 import logger from '../utils/logger';
 import { parseFeishuEvent, parseCommand } from './parse';
 import { getCommand } from './commands';
-import { feishu } from '../gateway/feishu';
 import type { CommandContext } from './types';
 import { isDuplicateMessage } from './dedup';
 import { executePrompt } from './commands/code';
 import { sessionManager } from '../runtime/sessionManager';
 
 /**
- * Main message event handler - thin router
- * 
+ * Main message event handler - gateway-agnostic router.
+ * Dispatches by gateway.id (feishu: parse Feishu payload and run commands).
+ *
  * IMPORTANT: Feishu WebSocket requires event handling to complete within 3 seconds,
  * otherwise it triggers a timeout re-push mechanism. To avoid duplicate messages,
  * we use two strategies:
  * 1. Message deduplication based on message_id (first line of defense)
  * 2. Async processing: return quickly to acknowledge, execute commands in background
  */
-export async function handleFeishuMessageEvent(data: any): Promise<void> {
+export async function handleMessageEvent(gateway: IGateway, data: unknown): Promise<void> {
   try {
-    const event = parseFeishuEvent(data, 'feishu');
-    
-    // Deduplicate: skip if we've already processed this message
-    if (isDuplicateMessage(event.messageId)) {
+    if (gateway.id === 'feishu') {
+      await handleFeishuPayload(gateway, data);
       return;
     }
-    
-    // Format sender info: channel [群/私聊] + name (or just channel if no name)
-    const chatLabel = event.chatType === 'group' ? '[群]' : event.chatType === 'p2p' ? '[私聊]' : '';
-    const sender = event.senderName
-      ? `${event.channel} ${chatLabel}/${event.senderName}`.trim()
-      : `${event.channel} ${chatLabel}`.trim();
-    logger.info(`👤 ${sender}: ${event.text}`);
-
-    // Build command context (command name set later in processCommand)
-    const chatType = (event.chatType === 'p2p' || event.chatType === 'group')
-      ? event.chatType
-      : undefined;
-    const ctx: CommandContext = {
-      senderId: event.senderId,
-      chatId: event.chatId,
-      messageId: event.messageId,
-      chatType,
-      command: '',
-      args: '',
-      reply: (text: string) => feishu.replyToMessage(event.messageId, text),
-      send: (title: string, content: string) =>
-        feishu.sendRichTextMessage(event.chatId, 'chat_id', title, content),
-    };
-
-    // Execute command asynchronously (fire-and-forget) to return within 3s
-    // This prevents Feishu from triggering timeout re-push
-    processCommand(ctx, event.text).catch(error => {
-      logger.error('❌ Error processing command:', error);
-    });
+    logger.warn(`No handler for gateway: ${gateway.id}`);
   } catch (error) {
     logger.error('❌ Error handling message event:', error);
   }
+}
+
+async function handleFeishuPayload(gateway: IGateway, data: unknown): Promise<void> {
+  const event = parseFeishuEvent(data as any, 'feishu');
+
+  if (isDuplicateMessage(event.messageId)) {
+    return;
+  }
+
+  let senderName = event.senderName || '';
+  let chatName = '';
+  const gw = gateway as {
+    getUserName?: (ids: { openId?: string; userId?: string }) => Promise<string>;
+    getChatName?: (chatId: string) => Promise<string>;
+  };
+  if (typeof gw.getUserName === 'function' && !senderName && (event.senderOpenId || event.senderUserId)) {
+    senderName = (await gw.getUserName({ openId: event.senderOpenId, userId: event.senderUserId })) || '';
+  }
+  if (event.chatType === 'group' && typeof gw.getChatName === 'function' && event.chatId) {
+    chatName = (await gw.getChatName(event.chatId)) || '';
+  }
+
+  // 私聊: feishu:senderName:  群聊: feishu:chatName:senderName:
+  const who = senderName || 'null';
+  const sender =
+    event.chatType === 'group'
+      ? [event.channel, chatName || 'null', who].join(':') + ':'
+      : event.chatType === 'p2p'
+        ? `${event.channel}:${who}:`
+        : `${event.channel}:`;
+  logger.info(`👤 ${sender} ${event.text}`);
+
+  const chatType =
+    event.chatType === 'p2p' || event.chatType === 'group' ? event.chatType : undefined;
+  const ctx: CommandContext = {
+    senderId: event.senderId,
+    chatId: event.chatId,
+    messageId: event.messageId,
+    chatType,
+    command: '',
+    args: '',
+    reply: (text: string) => gateway.reply(event.messageId, text),
+    send: (title: string, content: string) =>
+      gateway.send(event.chatId, 'chat_id', title, content),
+  };
+
+  processCommand(ctx, event.text).catch((error) => {
+    logger.error('❌ Error processing command:', error);
+  });
 }
 
 /**

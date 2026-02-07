@@ -71,6 +71,12 @@ const winstonLogger = winston.createLogger({
   ]
 });
 
+/** 当前日期对应的日志文件名，与 DailyRotateFile 的 %DATE% 一致 */
+function getCurrentLogPath(): string {
+  const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  return path.join(logDir, `opengate-${date}.log`);
+}
+
 // Custom logger wrapper that captures caller location at call time
 const logger = {
   info: (message: string, ...args: any[]) => {
@@ -92,6 +98,12 @@ const logger = {
     const loc = getCallerLocation();
     const suffix = loc ? ` (${loc})` : '';
     winstonLogger.debug(`${message}${suffix}`, ...args);
+  },
+  /** 原样追加到当日日志文件，无时间戳/级别，与控制台 print 一致。用于 code 工具输出。 */
+  writeRawToFile: (content: string) => {
+    try {
+      fs.appendFileSync(getCurrentLogPath(), content + '\n', 'utf8');
+    } catch (_) {}
   },
 };
 

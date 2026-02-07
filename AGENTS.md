@@ -17,7 +17,7 @@ opengate/
 ├── src/
 │   ├── index.ts           # 入口：加载 config、启动 gateway
 │   ├── config/            # 配置加载
-│   ├── gateway/           # 飞书连接与收发
+│   ├── gateway/            # 多网关：目录(catalog)、注册表(registry)、Feishu 实现
 │   ├── handler/           # 消息解析、路由、命令
 │   │   ├── parse.ts       # 解析飞书 payload
 │   │   └── commands/      # 按命令拆分
@@ -114,7 +114,7 @@ import type { Task, ToolResult } from './types'
 
 | 目录 | 职责 |
 |------|------|
-| `gateway/` | 飞书 WebSocket 连接、发消息、回复；不处理业务逻辑 |
+| `gateway/` | 多网关抽象(IGateway)、目录(与 OpenClaw 一致)、Feishu 实现；按 `GATEWAY_TYPE` 启动 |
 | `handler/` | 解析 payload、路由命令；调用 runtime 执行 |
 | `handler/commands/` | 每个命令一个文件，导出 `run(ctx)` |
 | `runtime/` | CLI 工具封装、底层执行、任务队列 |
@@ -134,6 +134,13 @@ import type { Task, ToolResult } from './types'
 1. 在 `runtime/cliTools.ts` 添加执行方法
 2. 在 `config/config.ts` 的 `supportedTools` 添加开关
 3. 在 `runtime/taskManager.ts` 的 switch 添加 case
+
+### 添加新网关
+
+1. 在 `gateway/catalog.ts` 的 `GATEWAY_CATALOG` 添加条目（`implemented: true` 待实现后改为 true）
+2. 在 `gateway/` 新建实现文件，实现 `IGateway`（`id`、`start`、`reply`、`send`）
+3. 在 `gateway/registry.ts` 的 `getGateway()` 中增加分支返回该网关实例
+4. 在 `handler/index.ts` 的 `handleMessageEvent` 中按 `gateway.id` 解析 payload 并组 ctx
 
 ## 安全注意事项
 

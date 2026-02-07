@@ -97,7 +97,8 @@ export abstract class BaseToolAdapter implements ToolAdapter {
     const handleOutput = options.onOutput ? (chunk: string) => {
       const cleaned = chunk.replace(/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '').trim();
       if (cleaned) {
-        logger.info(`📺 ${this.name}: ${cleaned}`);
+        process.stdout.write(cleaned + '\n');
+        logger.writeRawToFile(cleaned);
         options.onOutput!(cleaned);
       }
     } : undefined;

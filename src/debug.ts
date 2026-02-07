@@ -1,12 +1,13 @@
 import { handleFeishuMessageEvent } from './handler';
+import logger from './utils/logger';
 
 // Set debug mode
 process.env.DEBUG = 'true';
 
 // Debug mode: simulate message processing without Feishu connection
 async function debugMode() {
-  console.log('🔍 OpenGate Debug Mode');
-  console.log('📝 Simulating message processing...');
+  logger.info('OpenGate Debug Mode');
+  logger.info('Simulating message processing...');
   
   // Simulate a Feishu message event
   const mockMessage = {
@@ -27,6 +28,6 @@ async function debugMode() {
 }
 
 // Run debug mode directly
-debugMode().catch(console.error);
+debugMode().catch((err) => logger.error('Debug mode failed', err));
 
 export {};

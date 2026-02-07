@@ -19,6 +19,7 @@ export interface CommandContext {
   senderId: string;
   chatId: string;
   messageId: string;
+  command: string;
   args: string;
   reply: (text: string) => Promise<void>;
   send: (title: string, content: string) => Promise<void>;

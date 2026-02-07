@@ -2,5 +2,6 @@
   "watch": ["src"],
   "ext": "ts,json",
   "ignore": ["src/**/*.spec.ts", "src/**/*.test.ts"],
-  "exec": "pnpm run build && node --enable-source-maps dist/index.js"
+  "exec": "pnpm run build && node --enable-source-maps dist/index.js",
+  "delay": 3000
 }

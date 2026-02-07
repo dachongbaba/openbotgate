@@ -1,4 +1,5 @@
 import type { CommandContext } from '../types';
+import logger from '../../utils/logger';
 
 const HELP_TEXT = `
 *AI Code Gateway - Help*
@@ -28,5 +29,6 @@ Available Commands:
 `;
 
 export async function run(ctx: CommandContext): Promise<void> {
+  logger.info('💬 Reply: AI Code Gateway Help');
   await ctx.send('AI Code Gateway Help', HELP_TEXT);
 }

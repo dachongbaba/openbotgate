@@ -1,6 +1,6 @@
 import type { CommandContext } from '../types';
 import { taskManager } from '../../runtime/taskManager';
-import { formatDuration } from '../../utils/logger';
+import logger, { formatDuration } from '../../utils/logger';
 
 /** Throttle interval for streaming output (ms) */
 const STREAM_THROTTLE_MS = 1000;
@@ -61,18 +61,20 @@ export async function run(ctx: CommandContext): Promise<void> {
 
   if (!prompt) {
     if (process.env.DEBUG === 'true') {
-      console.log('ℹ️  Usage: /opencode <prompt>\nExample: /opencode Write a hello world function');
+      logger.debug('Usage: /opencode <prompt>\nExample: /opencode Write a hello world function');
       return;
     }
+    logger.info('💬 Reply: Usage: /opencode <prompt>');
     await ctx.reply('Usage: /opencode <prompt>\nExample: /opencode Write a hello world function');
     return;
   }
 
   // Step 1: Immediate acknowledgment
   if (process.env.DEBUG === 'true') {
-    console.log('🤖 Running OpenCode...');
+    logger.debug('Running OpenCode...');
   } else {
-    await ctx.reply('🤖 Running OpenCode...');
+    logger.info('🚀 Running OpenCode...');
+    // await ctx.reply('🤖 Running OpenCode...');
   }
 
   // Step 2: Execute with streaming output
@@ -87,9 +89,11 @@ export async function run(ctx: CommandContext): Promise<void> {
   if (result) {
     const duration = formatDuration(result.duration);
     if (result.success) {
-      await ctx.reply(`✅ *OpenCode 完成* (${duration})`);
+      logger.info(`✅ OpenCode 完成 (${duration})`);
+      // await ctx.reply(`✅ *OpenCode 完成* (${duration})`);
     } else {
-      await ctx.reply(`❌ *OpenCode 失败* (${duration})\n${result.error || 'Unknown error'}`);
+      logger.info(`❌ OpenCode 失败 (${duration})`);
+      // await ctx.reply(`❌ *OpenCode 失败* (${duration})\n${result.error || 'Unknown error'}`);
     }
   }
 }

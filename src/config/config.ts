@@ -31,6 +31,8 @@ export interface BotConfig {
     timeout: number;
     codeTimeout?: number;
     maxOutputLength: number;
+    /** Override shell stdout/stderr encoding (e.g. gbk). When set, used instead of chcp/LANG. */
+    shellOutputEncoding?: string;
   };
   /** 允许执行的 Code 类工具（adapter name 白名单） */
   allowedCodeTools: string[];
@@ -63,6 +65,7 @@ export function loadConfig(): BotConfig {
           )
         : undefined,
       maxOutputLength: parseInt(process.env.MAX_OUTPUT_LENGTH || '10000', 10),
+      shellOutputEncoding: process.env.SHELL_OUTPUT_ENCODING?.trim() || undefined,
     },
     allowedCodeTools: parseStringList(
       process.env.ALLOWED_CODE_TOOLS,

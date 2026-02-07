@@ -19,6 +19,8 @@ export interface CommandContext {
   senderId: string;
   chatId: string;
   messageId: string;
+  /** p2p = 1-on-1, group = group chat (from Feishu chat_type) */
+  chatType?: 'p2p' | 'group';
   command: string;
   args: string;
   reply: (text: string) => Promise<void>;

@@ -1,5 +1,5 @@
 import { BaseToolAdapter } from './base';
-import type { RunOptions, ToolCapabilities, SessionInfo } from './types';
+import type { RunOptions, ToolCapabilities, SessionInfo } from './base';
 
 /**
  * Adapter for OpenClaw CLI.

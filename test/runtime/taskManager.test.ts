@@ -3,17 +3,17 @@ import { taskManager } from '../../src/runtime/taskManager';
 // Mock cliTools to avoid actual command execution
 jest.mock('../../src/runtime/cliTools', () => ({
   cliTools: {
-    executeOpenCode: jest.fn().mockResolvedValue({
-      tool: 'opencode', success: true, output: 'mocked', duration: 100,
-    }),
-    executeClaudeCode: jest.fn().mockResolvedValue({
-      tool: 'claude-code', success: true, output: 'mocked', duration: 100,
-    }),
-    executeShell: jest.fn().mockResolvedValue({
-      tool: 'shell', success: true, output: 'mocked', duration: 100,
-    }),
-    executeGit: jest.fn().mockResolvedValue({
-      tool: 'git', success: true, output: 'mocked', duration: 100,
+    runTool: jest.fn().mockImplementation((tool: string) => {
+      if (tool === 'opencode' || tool === 'shell' || tool === 'git') {
+        return Promise.resolve({ tool, success: true, output: 'mocked', duration: 100 });
+      }
+      return Promise.resolve({
+        tool,
+        success: false,
+        output: '',
+        error: `Unknown or disallowed tool: ${tool}`,
+        duration: 0,
+      });
     }),
   },
 }));
@@ -76,7 +76,7 @@ describe('TaskManager', () => {
       const result = await taskManager.executeTask(task.id);
 
       expect(result?.success).toBe(false);
-      expect(result?.error).toContain('Unknown tool');
+      expect(result?.error).toContain('Unknown or disallowed tool');
     });
   });
 

@@ -1,4 +1,4 @@
-import { splitString } from '../../../src/handler/commands/utils';
+import { splitString } from '../../../src/handler/commands/shell';
 
 describe('splitString', () => {
   it('returns single chunk for short string', () => {

@@ -1,8 +1,57 @@
 import type { CommandContext } from '../types';
 import { toolRegistry } from '../../runtime/tools/registry';
 import { sessionManager } from '../../runtime/sessionManager';
-import { executePrompt } from './opencode';
-import logger from '../../utils/logger';
+import { createStreamHandler } from '../../runtime/streamHandler';
+import logger, { formatDuration } from '../../utils/logger';
+
+/**
+ * Execute prompt with current or specified code tool.
+ * Used by default message handler (no slash) and /code one-shot.
+ */
+export async function executePrompt(
+  ctx: CommandContext,
+  prompt: string,
+  toolNameOverride?: string
+): Promise<void> {
+  if (!prompt) {
+    logger.info('💬 Reply: Usage: send a prompt to execute');
+    await ctx.reply('Send a message to run with current tool, or use /code <tool> "prompt" for one-shot.');
+    return;
+  }
+
+  const session = sessionManager.getSession(ctx.senderId);
+  const toolName = toolNameOverride || session.tool;
+  const adapter = toolRegistry.get(toolName);
+
+  if (!adapter) {
+    await ctx.reply(`Tool "${toolName}" is not available. Use /code to switch tools.`);
+    return;
+  }
+
+  logger.info(`🚀 Running ${adapter.displayName}...`);
+
+  const streamHandler = createStreamHandler(ctx.reply);
+  const result = await adapter.execute(prompt, {
+    sessionId: session.sessionId ?? undefined,
+    model: session.model ?? undefined,
+    agent: session.agent ?? undefined,
+    cwd: session.cwd ?? undefined,
+    onOutput: streamHandler.onOutput,
+  });
+
+  await streamHandler.complete();
+
+  if (result.sessionId) {
+    sessionManager.updateSession(ctx.senderId, { sessionId: result.sessionId });
+  }
+
+  const duration = formatDuration(result.duration);
+  if (result.success) {
+    logger.info(`✅ ${adapter.displayName} 完成 (${duration})`);
+  } else {
+    logger.info(`❌ ${adapter.displayName} 失败 (${duration})`);
+  }
+}
 
 /**
  * /code command - switch tools or one-shot execute
@@ -15,7 +64,6 @@ export async function run(ctx: CommandContext): Promise<void> {
   const args = ctx.args.trim();
   const session = sessionManager.getSession(ctx.senderId);
 
-  // No args: show current tool + list
   if (!args) {
     const current = toolRegistry.get(session.tool);
     const all = toolRegistry.getEnabled();
@@ -33,12 +81,10 @@ export async function run(ctx: CommandContext): Promise<void> {
     return;
   }
 
-  // Parse: first word is tool name, rest is optional prompt
   const parts = args.split(/\s+/);
   const toolCmd = parts[0].toLowerCase();
   const prompt = parts.slice(1).join(' ').trim();
 
-  // Find adapter by command name
   const adapter = toolRegistry.getByCommand(toolCmd);
   if (!adapter) {
     const available = toolRegistry.getEnabled().map(t => t.commandName).join(', ');
@@ -46,17 +92,15 @@ export async function run(ctx: CommandContext): Promise<void> {
     return;
   }
 
-  // One-shot execute (don't switch default)
   if (prompt) {
     logger.info(`🔧 One-shot ${adapter.displayName}: ${prompt.substring(0, 50)}...`);
     await executePrompt(ctx, prompt, adapter.name);
     return;
   }
 
-  // Switch default tool
   sessionManager.updateSession(ctx.senderId, {
     tool: adapter.name,
-    sessionId: null,  // reset session when switching tools
+    sessionId: null,
     model: null,
     agent: null,
   });

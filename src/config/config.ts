@@ -8,16 +8,17 @@ export const MAX_EXECUTION_TIMEOUT_MS = 180000; // 3 minutes
 /** 默认允许的 Code 类工具（adapter name） */
 const DEFAULT_ALLOWED_CODE_TOOLS = [
   'opencode',
+  'cursorcode',
   'claudecode',
-  'codex',
+  'openaicodex',
   'qwencode',
-  'kimi',
+  'kimicode',
   'openclaw',
   'nanobot',
 ];
 
 /** 默认允许的 Shell 命令首词 */
-const DEFAULT_ALLOWED_SHELL_COMMANDS = ['git'];
+const DEFAULT_ALLOWED_SHELL_COMMANDS = ['git', 'dir', 'ls', 'pwd'];
 
 export interface BotConfig {
   feishu: {

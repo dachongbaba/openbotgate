@@ -114,22 +114,22 @@ describe('CLITools', () => {
     });
   });
 
-  describe('runTool (git)', () => {
-    it('returns error when git not in allowed shell commands', async () => {
-      config.allowedShellCommands = config.allowedShellCommands.filter(x => x !== 'git');
-      const result = await cliTools.runTool('git', 'status', {});
+  describe('runTool (shell with git command)', () => {
+    it('returns error when first word not in allowed shell commands', async () => {
+      config.allowedShellCommands = [];
+      const result = await cliTools.runTool('shell', 'git status', {});
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('not in allowed shell commands');
     });
 
-    it('prepends git to command', async () => {
+    it('executes full command when first word allowed', async () => {
       config.allowedShellCommands = ['git'];
       mockExecute.mockResolvedValue({
         success: true, exitCode: 0, stdout: 'On branch main', stderr: '', duration: 20,
       });
 
-      const result = await cliTools.runTool('git', 'status', {});
+      const result = await cliTools.runTool('shell', 'git status', {});
 
       expect(result.success).toBe(true);
       expect(mockExecute).toHaveBeenCalledWith('git status', expect.any(Object));
@@ -141,7 +141,7 @@ describe('CLITools', () => {
         success: true, exitCode: 0, stdout: '', stderr: '', duration: 10,
       });
 
-      await cliTools.runTool('git', 'log', { workingDir: '/path' });
+      await cliTools.runTool('shell', 'git log', { workingDir: '/path' });
 
       expect(mockExecute).toHaveBeenCalledWith('git log', expect.objectContaining({ workingDir: '/path' }));
     });

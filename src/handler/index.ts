@@ -25,10 +25,11 @@ export async function handleFeishuMessageEvent(data: any): Promise<void> {
       return;
     }
     
-    // Format sender info: channel + name (or just channel if no name)
-    const sender = event.senderName 
-      ? `${event.channel}/${event.senderName}`
-      : event.channel;
+    // Format sender info: channel [群/私聊] + name (or just channel if no name)
+    const chatLabel = event.chatType === 'group' ? '[群]' : event.chatType === 'p2p' ? '[私聊]' : '';
+    const sender = event.senderName
+      ? `${event.channel} ${chatLabel}/${event.senderName}`.trim()
+      : `${event.channel} ${chatLabel}`.trim();
     logger.info(`👤 ${sender}: ${event.text}`);
 
     // Build command context (command name set later in processCommand)

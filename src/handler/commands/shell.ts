@@ -2,7 +2,7 @@ import type { CommandContext } from '../types';
 import type { ToolResult } from '../../runtime/tools/base';
 import { taskManager } from '../../runtime/taskManager';
 import { config } from '../../config/config';
-import logger from '../../utils/logger';
+import logger, { formatDuration } from '../../utils/logger';
 
 /**
  * Split string into chunks at newline boundaries
@@ -51,6 +51,9 @@ async function sendResult(
   const maxLength = 8000;
   const chunks = splitString(output, maxLength);
 
+  const logPreviewLen = 300;
+  const outputPreview = output.length > logPreviewLen ? output.slice(0, logPreviewLen) + '...' : output;
+
   for (let i = 0; i < chunks.length; i++) {
     const prefix = i === 0
       ? `📦 *${result.tool} Output* (${result.duration}ms)\n\n`
@@ -62,6 +65,7 @@ async function sendResult(
       logger.debug(messageContent);
     } else {
       logger.info(`💬 Reply: ${result.tool} output chunk ${i + 1}/${chunks.length}`);
+      if (i === 0) logger.info(`📦 ${result.tool} output (${result.duration}ms): ${outputPreview.replace(/\n/g, ' ')}`);
       await reply(messageContent);
     }
 
@@ -89,6 +93,12 @@ async function runShell(ctx: CommandContext, commandName: string): Promise<void>
   const result = await taskManager.executeTask(task.id);
 
   if (result) {
+    const duration = formatDuration(result.duration);
+    if (result.success) {
+      logger.info(`✅ shell (${commandName}) 完成 (${duration})`);
+    } else {
+      logger.info(`❌ shell (${commandName}) 失败 (${duration})`);
+    }
     await sendResult(result, ctx.reply);
   }
 }

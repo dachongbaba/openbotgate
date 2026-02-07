@@ -1,6 +1,8 @@
 import { executor, ExecutionOptions } from './executor';
 import { config } from '../config/config';
 import logger from '../utils/logger';
+import { toolRegistry } from './tools/registry';
+import type { ToolResult as AdapterToolResult, RunOptions } from './tools/types';
 
 export interface ToolResult {
   tool: string;
@@ -8,6 +10,7 @@ export interface ToolResult {
   output: string;
   error?: string;
   duration: number;
+  sessionId?: string;
 }
 
 export interface ToolOptions extends ExecutionOptions {
@@ -16,76 +19,32 @@ export interface ToolOptions extends ExecutionOptions {
 }
 
 export class CLITools {
-  async executeOpenCode(prompt: string, options: ToolOptions = {}): Promise<ToolResult> {
-    return this.executeCliTool({
-      toolName: 'opencode',
-      configKey: 'opencode',
-      command: `opencode run "${this.escapePrompt(prompt)}"`,
-      prompt,
-      options,
-    });
-  }
-
-  private async executeCliTool(params: {
-    toolName: string;
-    configKey: keyof typeof config.supportedTools;
-    command: string;
-    prompt: string;
-    options: ToolOptions;
-  }): Promise<ToolResult> {
-    const { toolName, configKey, command, options } = params;
-
-    if (!config.supportedTools[configKey]) {
+  /**
+   * Execute any registered tool adapter by name.
+   * This is the primary entry point for all AI tool execution.
+   */
+  async executeTool(toolName: string, prompt: string, runOptions: RunOptions): Promise<ToolResult> {
+    const adapter = toolRegistry.get(toolName);
+    if (!adapter) {
       return {
         tool: toolName,
         success: false,
         output: '',
-        error: `${toolName} tool is not enabled in configuration`,
+        error: `Unknown tool: ${toolName}`,
         duration: 0,
       };
     }
-
-    const startTime = Date.now();
-    const timeout = options.timeout ?? config.execution.opencodeTimeout ?? config.execution.timeout;
-    const { onOutput, ...execOptions } = options;
-
-    // Clean and forward output chunk
-    const handleOutput = onOutput ? (chunk: string) => {
-      const cleaned = chunk.replace(/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '').trim();
-      if (cleaned) {
-        logger.info(`📺 ${toolName}: ${cleaned}`);
-        onOutput(cleaned);
-      }
-    } : undefined;
-
-    try {
-      // Stream both stdout and stderr (progress info often goes to stderr)
-      const result = await executor.execute(command, { 
-        ...execOptions, 
-        timeout, 
-        onStdout: handleOutput,
-        onStderr: handleOutput,
-      });
-      const duration = Date.now() - startTime;
-
-      if (result.success) {
-        return { tool: toolName, success: true, output: result.stdout, duration };
-      }
-
-      const errorMsg = result.stderr || 'Command failed';
-      return { tool: toolName, success: false, output: result.stdout, error: errorMsg, duration };
-    } catch (error: any) {
-      const duration = Date.now() - startTime;
-      const errorMsg = error.message || 'Unknown error occurred';
-      return { tool: toolName, success: false, output: '', error: errorMsg, duration };
-    }
+    const result: AdapterToolResult = await adapter.execute(prompt, runOptions);
+    return result;
   }
 
-  private escapePrompt(str: string): string {
-    return str
-      .replace(/"/g, '\\"')
-      .replace(/\r?\n/g, ' ')
-      .replace(/[&|<>^]/g, '^$&');
+  /** Backward-compat: execute opencode via adapter */
+  async executeOpenCode(prompt: string, options: ToolOptions = {}): Promise<ToolResult> {
+    return this.executeTool('opencode', prompt, {
+      onOutput: options.onOutput,
+      timeout: options.timeout,
+      cwd: options.workingDir,
+    });
   }
 
   async executeShell(command: string, options: ToolOptions = {}): Promise<ToolResult> {

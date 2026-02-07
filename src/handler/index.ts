@@ -4,8 +4,9 @@ import { getCommand } from './commands';
 import { feishu } from '../gateway/feishu';
 import type { CommandContext } from './types';
 
-// Import default command for non-command messages
-import { run as executeOpenCode } from './commands/opencode';
+// Import prompt executor for non-command messages
+import { executePrompt } from './commands/opencode';
+import { sessionManager } from '../runtime/sessionManager';
 
 // Message deduplication: track processed message IDs with timestamps
 const processedMessages = new Map<string, number>();
@@ -102,10 +103,11 @@ async function processCommand(ctx: CommandContext, text: string): Promise<void> 
       await rawReply(`Unknown command: ${cmd}\nUse /help to see available commands.`);
     }
   } else {
-    // Default: execute as OpenCode prompt
-    ctx.command = 'opencode';
+    // Default: execute with user's current tool
+    const session = sessionManager.getSession(ctx.senderId);
+    ctx.command = session.tool;
     ctx.args = text;
     ctx.reply = (text: string) => rawReply(`[${ctx.command}] ${text}`);
-    await executeOpenCode(ctx);
+    await executePrompt(ctx, text);
   }
 }

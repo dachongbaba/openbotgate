@@ -70,7 +70,7 @@ async function processCommand(ctx: CommandContext, text: string): Promise<void> 
 
     const handler = getCommand(cmd);
     if (handler) {
-      logger.info(`🔧 Command: ${cmd} ${args ? args.substring(0, 30) + (args.length > 30 ? '...' : '') : ''}`);
+      logger.info(`🔧 Hit Command: ${cmd} ${args ? args.substring(0, 30) + (args.length > 30 ? '...' : '') : ''}`);
       ctx.reply = (text: string) => rawReply(`[${ctx.command}] ${text}`);
       await handler(ctx);
     } else {
@@ -84,6 +84,7 @@ async function processCommand(ctx: CommandContext, text: string): Promise<void> 
     ctx.command = session.tool;
     ctx.args = text;
     ctx.reply = (text: string) => rawReply(`[${ctx.command}] ${text}`);
+    logger.info(`🔧 Hit Command: ${ctx.command} ${text ? text.substring(0, 30) + (text.length > 30 ? '...' : '') : ''}`);
     await executePrompt(ctx, text);
   }
 }

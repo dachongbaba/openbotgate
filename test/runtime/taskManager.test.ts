@@ -4,7 +4,7 @@ import { taskManager } from '../../src/runtime/taskManager';
 jest.mock('../../src/runtime/cliTools', () => ({
   cliTools: {
     runTool: jest.fn().mockImplementation((tool: string) => {
-      if (tool === 'opencode' || tool === 'shell' || tool === 'git') {
+      if (tool === 'opencode' || tool === 'shell') {
         return Promise.resolve({ tool, success: true, output: 'mocked', duration: 100 });
       }
       return Promise.resolve({

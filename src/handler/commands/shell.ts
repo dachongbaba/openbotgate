@@ -73,8 +73,7 @@ async function sendResult(
 
 /**
  * Run a shell command (allowed by config.allowedShellCommands).
- * For "git", tool is 'git' and command is args only.
- * For others (e.g. ls, cat), tool is 'shell' and command is "name args".
+ * Generic: always builds full command "name args" and uses tool 'shell'.
  */
 async function runShell(ctx: CommandContext, commandName: string): Promise<void> {
   if (!config.allowedShellCommands.includes(commandName)) {
@@ -82,18 +81,11 @@ async function runShell(ctx: CommandContext, commandName: string): Promise<void>
     return;
   }
 
-  const isGit = commandName === 'git';
-  const command = isGit ? ctx.args.trim() : (commandName + ' ' + ctx.args.trim()).trim();
-
-  if (isGit && !command) {
-    await ctx.reply('Usage: /git <command>\nExample: /git status');
-    return;
-  }
+  const command = (commandName + ' ' + ctx.args.trim()).trim();
 
   logger.info(`🚀 Running ${commandName}...`);
 
-  const tool = isGit ? 'git' : 'shell';
-  const task = await taskManager.createTask(ctx.senderId, command, tool);
+  const task = await taskManager.createTask(ctx.senderId, command, 'shell');
   const result = await taskManager.executeTask(task.id);
 
   if (result) {

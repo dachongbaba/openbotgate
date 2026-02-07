@@ -8,7 +8,7 @@ import type { RunOptions, ToolCapabilities } from './base';
  * - Requires OpenRouter API key (kimi config set-key)
  */
 export class KimiAdapter extends BaseToolAdapter {
-  readonly name = 'kimi';
+  readonly name = 'kimicode';
   readonly commandName = 'kimi';
   readonly displayName = 'Kimi';
   readonly capabilities: ToolCapabilities = {

@@ -1,5 +1,6 @@
 import { spawn, SpawnOptions } from 'child_process';
 import { config } from '../config/config';
+import { decodeShellChunk, ensureShellEncoding } from '../utils/encoding';
 
 export interface ExecutionResult {
   success: boolean;
@@ -23,6 +24,10 @@ export class CommandExecutor {
    * Uses child.stdin.end() to signal no more input for immediate output.
    */
   async execute(command: string, options: ExecutionOptions = {}): Promise<ExecutionResult> {
+    if (process.platform === 'win32') {
+      await ensureShellEncoding();
+    }
+
     const startTime = Date.now();
     const timeout = options.timeout || config.execution.timeout;
     const env = { ...process.env, ...options.env };
@@ -55,13 +60,13 @@ export class CommandExecutor {
       }, timeout);
 
       child.stdout?.on('data', (data: Buffer) => {
-        const chunk = data.toString();
+        const chunk = decodeShellChunk(data);
         stdout += chunk;
         options.onStdout?.(chunk);
       });
 
       child.stderr?.on('data', (data: Buffer) => {
-        const chunk = data.toString();
+        const chunk = decodeShellChunk(data);
         stderr += chunk;
         options.onStderr?.(chunk);
       });

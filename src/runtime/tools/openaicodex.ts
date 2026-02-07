@@ -9,9 +9,9 @@ import type { RunOptions, ToolCapabilities } from './base';
  * - JSON output: --json
  */
 export class CodexAdapter extends BaseToolAdapter {
-  readonly name = 'codex';
+  readonly name = 'openaicodex';
   readonly commandName = 'codex';
-  readonly displayName = 'Codex';
+  readonly displayName = 'OpenAI Codex';
   readonly capabilities: ToolCapabilities = {
     session: true,
     model: true,

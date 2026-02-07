@@ -12,7 +12,7 @@ export interface ToolOptions extends ExecutionOptions {
 
 export class CLITools {
   /**
-   * Unified execution entry: Code adapter or Shell (git/shell).
+   * Unified execution entry: Code adapter or Shell.
    * taskManager and handlers call this.
    */
   async runTool(
@@ -36,9 +36,6 @@ export class CLITools {
         timeout: options.timeout,
         cwd: options.workingDir,
       });
-    }
-    if (toolName === 'git') {
-      return this.runGit(command, options);
     }
     if (toolName === 'shell') {
       return this.runShell(command, options);
@@ -106,40 +103,6 @@ export class CLITools {
     };
   }
 
-  private async runGit(command: string, options: ToolOptions = {}): Promise<ToolResult> {
-    if (!config.allowedShellCommands.includes('git')) {
-      return {
-        tool: 'git',
-        success: false,
-        output: '',
-        error: 'Git is not in allowed shell commands',
-        duration: 0,
-      };
-    }
-
-    const startTime = Date.now();
-    const { onOutput, ...execOptions } = options;
-    const onStdout = onOutput
-      ? (chunk: string) => {
-          const cleaned = chunk.trim();
-          if (cleaned) {
-            logger.info(`📺 git: ${cleaned}`);
-            onOutput(cleaned);
-          }
-        }
-      : undefined;
-
-    const result = await executor.execute(`git ${command}`, { ...execOptions, onStdout });
-    const duration = Date.now() - startTime;
-
-    return {
-      tool: 'git',
-      success: result.success,
-      output: result.stdout,
-      error: result.success ? undefined : result.stderr,
-      duration,
-    };
-  }
 }
 
 export const cliTools = new CLITools();

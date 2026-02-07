@@ -1,5 +1,5 @@
 import { BaseToolAdapter } from './base';
-import type { RunOptions, ToolCapabilities } from './types';
+import type { RunOptions, ToolCapabilities } from './base';
 
 /**
  * Adapter for Claude Code CLI.

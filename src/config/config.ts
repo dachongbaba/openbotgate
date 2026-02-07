@@ -5,38 +5,41 @@ dotenv.config();
 /** 最大允许执行超时（毫秒），避免 OpenCode 等命令长时间挂起导致用户等待过久 */
 export const MAX_EXECUTION_TIMEOUT_MS = 180000; // 3 minutes
 
+/** 默认允许的 Code 类工具（adapter name） */
+const DEFAULT_ALLOWED_CODE_TOOLS = [
+  'opencode',
+  'claudecode',
+  'codex',
+  'qwencode',
+  'kimi',
+  'openclaw',
+  'nanobot',
+];
+
+/** 默认允许的 Shell 命令首词 */
+const DEFAULT_ALLOWED_SHELL_COMMANDS = ['git'];
+
 export interface BotConfig {
   feishu: {
     appId: string;
     appSecret: string;
     verificationToken?: string;
-    // Domain: "feishu" for China, "lark" for international
     domain: 'feishu' | 'lark';
-  };
-  server: {
-    host: string;
-    port: number;
-  };
-  opencode: {
-    // URL of opencode serve (start with: opencode serve --port 14096)
-    serverUrl: string;
   };
   execution: {
     timeout: number;
-    opencodeTimeout?: number; // optional; overrides timeout for opencode only
+    codeTimeout?: number;
     maxOutputLength: number;
   };
-  supportedTools: {
-    opencode: boolean;
-    shell: boolean;
-    git: boolean;
-    claudecode: boolean;
-    codex: boolean;
-    qwencode: boolean;
-    kimi: boolean;
-    openclaw: boolean;
-    nanobot: boolean;
-  };
+  /** 允许执行的 Code 类工具（adapter name 白名单） */
+  allowedCodeTools: string[];
+  /** 允许在 Shell 中执行的命令首词白名单 */
+  allowedShellCommands: string[];
+}
+
+function parseStringList(envValue: string | undefined, defaultList: string[]): string[] {
+  if (envValue == null || envValue === '') return defaultList;
+  return envValue.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
 }
 
 export function loadConfig(): BotConfig {
@@ -47,37 +50,27 @@ export function loadConfig(): BotConfig {
       verificationToken: process.env.FEISHU_VERIFICATION_TOKEN,
       domain: (process.env.FEISHU_DOMAIN as 'feishu' | 'lark') || 'feishu',
     },
-    server: {
-      host: process.env.SERVER_HOST || '0.0.0.0',
-      port: parseInt(process.env.SERVER_PORT || '3000', 10),
-    },
-    opencode: {
-      serverUrl: process.env.OPENCODE_SERVER_URL || 'http://127.0.0.1:14096',
-    },
     execution: {
       timeout: Math.min(
         parseInt(process.env.EXECUTION_TIMEOUT || '120000', 10),
         MAX_EXECUTION_TIMEOUT_MS
       ),
-      opencodeTimeout: process.env.OPENCODE_TIMEOUT
+      codeTimeout: process.env.CODE_TIMEOUT
         ? Math.min(
-            parseInt(process.env.OPENCODE_TIMEOUT, 10),
+            parseInt(process.env.CODE_TIMEOUT, 10),
             MAX_EXECUTION_TIMEOUT_MS
           )
         : undefined,
       maxOutputLength: parseInt(process.env.MAX_OUTPUT_LENGTH || '10000', 10),
     },
-    supportedTools: {
-      opencode: process.env.TOOL_OPENCODE_ENABLED !== 'false',
-      shell: process.env.TOOL_SHELL_ENABLED === 'true',
-      git: process.env.TOOL_GIT_ENABLED === 'true',
-      claudecode: process.env.TOOL_CLAUDECODE_ENABLED !== 'false',
-      codex: process.env.TOOL_CODEX_ENABLED !== 'false',
-      qwencode: process.env.TOOL_QWENCODE_ENABLED !== 'false',
-      kimi: process.env.TOOL_KIMI_ENABLED !== 'false',
-      openclaw: process.env.TOOL_OPENCLAW_ENABLED !== 'false',
-      nanobot: process.env.TOOL_NANOBOT_ENABLED !== 'false',
-    },
+    allowedCodeTools: parseStringList(
+      process.env.ALLOWED_CODE_TOOLS,
+      DEFAULT_ALLOWED_CODE_TOOLS
+    ),
+    allowedShellCommands: parseStringList(
+      process.env.ALLOWED_SHELL_COMMANDS,
+      DEFAULT_ALLOWED_SHELL_COMMANDS
+    ),
   };
 }
 

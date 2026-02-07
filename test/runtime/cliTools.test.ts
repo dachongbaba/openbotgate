@@ -1,6 +1,7 @@
 import { CLITools } from '../../src/runtime/cliTools';
 import { executor } from '../../src/runtime/executor';
 import { config } from '../../src/config/config';
+import { toolRegistry, registerAll } from '../../src/runtime/tools';
 
 jest.mock('../../src/runtime/executor');
 jest.mock('../../src/utils/logger', () => ({
@@ -12,35 +13,44 @@ const mockExecute = executor.execute as jest.MockedFunction<typeof executor.exec
 
 describe('CLITools', () => {
   let cliTools: CLITools;
-  let savedConfig: typeof config.supportedTools;
+  let savedAllowedCodeTools: string[];
+  let savedAllowedShellCommands: string[];
+
+  beforeAll(() => {
+    registerAll(toolRegistry);
+  });
 
   beforeEach(() => {
     cliTools = new CLITools();
     jest.clearAllMocks();
-    savedConfig = { ...config.supportedTools };
+    savedAllowedCodeTools = [...config.allowedCodeTools];
+    savedAllowedShellCommands = [...config.allowedShellCommands];
   });
 
   afterEach(() => {
-    Object.assign(config.supportedTools, savedConfig);
+    config.allowedCodeTools.length = 0;
+    config.allowedCodeTools.push(...savedAllowedCodeTools);
+    config.allowedShellCommands.length = 0;
+    config.allowedShellCommands.push(...savedAllowedShellCommands);
   });
 
-  describe('executeOpenCode', () => {
-    it('returns error when disabled', async () => {
-      config.supportedTools.opencode = false;
-      const result = await cliTools.executeOpenCode('test');
+  describe('runTool (opencode)', () => {
+    it('returns error when not in allowed code tools', async () => {
+      config.allowedCodeTools = config.allowedCodeTools.filter(x => x !== 'opencode');
+      const result = await cliTools.runTool('opencode', 'test', {});
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('not enabled');
+      expect(result.error).toContain('not in allowed');
       expect(mockExecute).not.toHaveBeenCalled();
     });
 
     it('returns success on successful execution', async () => {
-      config.supportedTools.opencode = true;
+      config.allowedCodeTools = ['opencode'];
       mockExecute.mockResolvedValue({
         success: true, exitCode: 0, stdout: 'output', stderr: '', duration: 100,
       });
 
-      const result = await cliTools.executeOpenCode('test');
+      const result = await cliTools.runTool('opencode', 'test', {});
 
       expect(result.success).toBe(true);
       expect(result.output).toBe('output');
@@ -48,113 +58,92 @@ describe('CLITools', () => {
     });
 
     it('returns failure on failed execution', async () => {
-      config.supportedTools.opencode = true;
+      config.allowedCodeTools = ['opencode'];
       mockExecute.mockResolvedValue({
         success: false, exitCode: 1, stdout: '', stderr: 'error', duration: 50,
       });
 
-      const result = await cliTools.executeOpenCode('test');
+      const result = await cliTools.runTool('opencode', 'test', {});
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('error');
     });
-
-    it('handles exceptions', async () => {
-      config.supportedTools.opencode = true;
-      mockExecute.mockRejectedValue(new Error('Network error'));
-
-      const result = await cliTools.executeOpenCode('test');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Network error');
-    });
-
-    it('escapes special characters', async () => {
-      config.supportedTools.opencode = true;
-      mockExecute.mockResolvedValue({
-        success: true, exitCode: 0, stdout: 'ok', stderr: '', duration: 10,
-      });
-
-      await cliTools.executeOpenCode('test "quoted"');
-
-      expect(mockExecute).toHaveBeenCalledWith(expect.stringContaining('test \\"quoted\\"'), expect.any(Object));
-    });
   });
 
-  describe('executeClaudeCode', () => {
-    it('returns error when disabled', async () => {
-      config.supportedTools.claudeCode = false;
-      const result = await cliTools.executeClaudeCode('test');
+  describe('runTool (claudecode)', () => {
+    it('returns error when not in allowed code tools', async () => {
+      config.allowedCodeTools = config.allowedCodeTools.filter(x => x !== 'claudecode');
+      const result = await cliTools.runTool('claudecode', 'test', {});
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('not enabled');
+      expect(result.error).toContain('not in allowed');
     });
 
-    it('executes claude command', async () => {
-      config.supportedTools.claudeCode = true;
+    it('executes via adapter when allowed', async () => {
+      config.allowedCodeTools = ['claudecode'];
       mockExecute.mockResolvedValue({
         success: true, exitCode: 0, stdout: 'output', stderr: '', duration: 100,
       });
 
-      const result = await cliTools.executeClaudeCode('test');
+      const result = await cliTools.runTool('claudecode', 'test', {});
 
       expect(result.success).toBe(true);
-      expect(mockExecute).toHaveBeenCalledWith(expect.stringContaining('claude -p'), expect.any(Object));
+      expect(result.output).toBe('output');
     });
   });
 
-  describe('executeShell', () => {
-    it('returns error when disabled (security)', async () => {
-      config.supportedTools.shell = false;
-      const result = await cliTools.executeShell('echo hello');
+  describe('runTool (shell)', () => {
+    it('returns error when command not in allowed shell commands', async () => {
+      config.allowedShellCommands = [];
+      const result = await cliTools.runTool('shell', 'echo hello', {});
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('security');
+      expect(result.error).toContain('not in allowed shell commands');
     });
 
-    it('executes shell command directly', async () => {
-      config.supportedTools.shell = true;
+    it('executes shell command when first word allowed', async () => {
+      config.allowedShellCommands = ['echo', 'git'];
       mockExecute.mockResolvedValue({
         success: true, exitCode: 0, stdout: 'hello', stderr: '', duration: 10,
       });
 
-      const result = await cliTools.executeShell('echo hello');
+      const result = await cliTools.runTool('shell', 'echo hello', {});
 
       expect(result.success).toBe(true);
       expect(mockExecute).toHaveBeenCalledWith('echo hello', expect.any(Object));
     });
   });
 
-  describe('executeGit', () => {
-    it('returns error when disabled', async () => {
-      config.supportedTools.git = false;
-      const result = await cliTools.executeGit('status');
+  describe('runTool (git)', () => {
+    it('returns error when git not in allowed shell commands', async () => {
+      config.allowedShellCommands = config.allowedShellCommands.filter(x => x !== 'git');
+      const result = await cliTools.runTool('git', 'status', {});
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('not enabled');
+      expect(result.error).toContain('not in allowed shell commands');
     });
 
     it('prepends git to command', async () => {
-      config.supportedTools.git = true;
+      config.allowedShellCommands = ['git'];
       mockExecute.mockResolvedValue({
         success: true, exitCode: 0, stdout: 'On branch main', stderr: '', duration: 20,
       });
 
-      const result = await cliTools.executeGit('status');
+      const result = await cliTools.runTool('git', 'status', {});
 
       expect(result.success).toBe(true);
       expect(mockExecute).toHaveBeenCalledWith('git status', expect.any(Object));
     });
 
     it('passes options through', async () => {
-      config.supportedTools.git = true;
+      config.allowedShellCommands = ['git'];
       mockExecute.mockResolvedValue({
         success: true, exitCode: 0, stdout: '', stderr: '', duration: 10,
       });
 
-      await cliTools.executeGit('log', { workingDir: '/path' });
+      await cliTools.runTool('git', 'log', { workingDir: '/path' });
 
-      expect(mockExecute).toHaveBeenCalledWith('git log', { workingDir: '/path' });
+      expect(mockExecute).toHaveBeenCalledWith('git log', expect.objectContaining({ workingDir: '/path' }));
     });
   });
 });

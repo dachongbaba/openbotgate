@@ -71,26 +71,7 @@ class TaskManager {
     logger.debug(`🚀 Executing ${task.tool}: ${cmdPreview}`);
 
     const streamOptions = { onOutput };
-
-    switch (task.tool) {
-      case 'opencode':
-        result = await cliTools.executeOpenCode(task.command, streamOptions);
-        break;
-      case 'shell':
-        result = await cliTools.executeShell(task.command, streamOptions);
-        break;
-      case 'git':
-        result = await cliTools.executeGit(task.command, streamOptions);
-        break;
-      default:
-        result = {
-          tool: task.tool,
-          success: false,
-          output: '',
-          error: `Unknown tool: ${task.tool}`,
-          duration: 0,
-        };
-    }
+    result = await cliTools.runTool(task.tool, task.command, streamOptions);
 
     task.result = result;
     task.status = result.success ? 'completed' : 'failed';

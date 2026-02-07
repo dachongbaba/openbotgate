@@ -1,7 +1,69 @@
 import { executor } from '../executor';
 import { config } from '../../config/config';
 import logger from '../../utils/logger';
-import type { ToolAdapter, ToolResult, RunOptions, SessionInfo, ToolCapabilities } from './types';
+
+/**
+ * Result from CLI tool execution
+ */
+export interface ToolResult {
+  tool: string;
+  success: boolean;
+  output: string;
+  error?: string;
+  duration: number;
+  /** Captured session ID from tool output (if available) */
+  sessionId?: string;
+}
+
+/**
+ * Options for tool execution
+ */
+export interface RunOptions {
+  sessionId?: string;
+  model?: string;
+  agent?: string;
+  cwd?: string;
+  onOutput?: (chunk: string) => void;
+  timeout?: number;
+}
+
+/**
+ * Session info returned by tools that support listing sessions
+ */
+export interface SessionInfo {
+  id: string;
+  title: string;
+  updatedAt: string;
+}
+
+/**
+ * Capability declaration for a tool adapter
+ */
+export interface ToolCapabilities {
+  session: boolean;
+  model: boolean;
+  agent: boolean;
+  compact: boolean;
+  listModels: boolean;
+  listSessions: boolean;
+  listAgents: boolean;
+}
+
+/**
+ * Unified adapter interface for all AI CLI tools
+ */
+export interface ToolAdapter {
+  readonly name: string;
+  readonly commandName: string;
+  readonly displayName: string;
+  readonly capabilities: ToolCapabilities;
+
+  execute(prompt: string, options: RunOptions): Promise<ToolResult>;
+  listModels(): Promise<string[]>;
+  listSessions(): Promise<SessionInfo[]>;
+  listAgents(): Promise<string[]>;
+  buildCommand(prompt: string, options: RunOptions): string;
+}
 
 /**
  * Base class for tool adapters with shared execution logic.
@@ -16,13 +78,12 @@ export abstract class BaseToolAdapter implements ToolAdapter {
   abstract buildCommand(prompt: string, options: RunOptions): string;
 
   async execute(prompt: string, options: RunOptions): Promise<ToolResult> {
-    const configKey = this.name as keyof typeof config.supportedTools;
-    if (config.supportedTools[configKey] === false) {
+    if (!config.allowedCodeTools.includes(this.name)) {
       return {
         tool: this.name,
         success: false,
         output: '',
-        error: `${this.displayName} is not enabled in configuration`,
+        error: `${this.displayName} is not in allowed code tools`,
         duration: 0,
       };
     }
@@ -31,7 +92,7 @@ export abstract class BaseToolAdapter implements ToolAdapter {
     logger.debug(`🔧 ${this.displayName} command: ${command}`);
 
     const startTime = Date.now();
-    const timeout = options.timeout ?? config.execution.opencodeTimeout ?? config.execution.timeout;
+    const timeout = options.timeout ?? config.execution.codeTimeout ?? config.execution.timeout;
 
     const handleOutput = options.onOutput ? (chunk: string) => {
       const cleaned = chunk.replace(/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '').trim();
@@ -58,7 +119,6 @@ export abstract class BaseToolAdapter implements ToolAdapter {
         duration,
       };
 
-      // Try to capture session ID from output
       const sessionId = this.parseSessionId(result.stdout);
       if (sessionId) toolResult.sessionId = sessionId;
 
@@ -75,7 +135,6 @@ export abstract class BaseToolAdapter implements ToolAdapter {
     }
   }
 
-  /** Override in subclass to extract session ID from tool output */
   protected parseSessionId(_output: string): string | undefined {
     return undefined;
   }
@@ -92,7 +151,6 @@ export abstract class BaseToolAdapter implements ToolAdapter {
     return [];
   }
 
-  /** Escape prompt for shell command */
   protected escapePrompt(str: string): string {
     return str
       .replace(/"/g, '\\"')
@@ -100,7 +158,6 @@ export abstract class BaseToolAdapter implements ToolAdapter {
       .replace(/[&|<>^]/g, '^$&');
   }
 
-  /** Execute a helper command and return stdout */
   protected async runHelper(command: string, cwd?: string): Promise<string> {
     const result = await executor.execute(command, {
       timeout: 30000,

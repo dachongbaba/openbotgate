@@ -1,6 +1,6 @@
 import { BaseToolAdapter } from './base';
 import { executor } from '../executor';
-import type { RunOptions, ToolCapabilities, ToolResult } from './types';
+import type { RunOptions, ToolCapabilities, ToolResult } from './base';
 import { config } from '../../config/config';
 import logger from '../../utils/logger';
 
@@ -37,13 +37,12 @@ export class NanobotAdapter extends BaseToolAdapter {
 
   /** Override execute to set PYTHONIOENCODING for Windows Unicode support */
   async execute(prompt: string, options: RunOptions): Promise<ToolResult> {
-    const configKey = this.name as keyof typeof config.supportedTools;
-    if (config.supportedTools[configKey] === false) {
+    if (!config.allowedCodeTools.includes(this.name)) {
       return {
         tool: this.name,
         success: false,
         output: '',
-        error: `${this.displayName} is not enabled in configuration`,
+        error: `${this.displayName} is not in allowed code tools`,
         duration: 0,
       };
     }
@@ -52,7 +51,7 @@ export class NanobotAdapter extends BaseToolAdapter {
     logger.debug(`🔧 ${this.displayName} command: ${command}`);
 
     const startTime = Date.now();
-    const timeout = options.timeout ?? config.execution.opencodeTimeout ?? config.execution.timeout;
+    const timeout = options.timeout ?? config.execution.codeTimeout ?? config.execution.timeout;
 
     const handleOutput = options.onOutput ? (chunk: string) => {
       const cleaned = chunk.replace(/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '').trim();

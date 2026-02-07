@@ -3,37 +3,9 @@ import { parseFeishuEvent, parseCommand } from './parse';
 import { getCommand } from './commands';
 import { feishu } from '../gateway/feishu';
 import type { CommandContext } from './types';
-
-// Import prompt executor for non-command messages
-import { executePrompt } from './commands/opencode';
+import { isDuplicateMessage } from './dedup';
+import { executePrompt } from './commands/code';
 import { sessionManager } from '../runtime/sessionManager';
-
-// Message deduplication: track processed message IDs with timestamps
-const processedMessages = new Map<string, number>();
-const DEDUP_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
-
-/** Clean up old entries periodically */
-function cleanupProcessedMessages(): void {
-  const now = Date.now();
-  for (const [id, timestamp] of processedMessages) {
-    if (now - timestamp > DEDUP_WINDOW_MS) {
-      processedMessages.delete(id);
-    }
-  }
-}
-
-/** Check if message was already processed (returns true if duplicate) */
-function isDuplicateMessage(messageId: string): boolean {
-  cleanupProcessedMessages();
-  
-  if (processedMessages.has(messageId)) {
-    logger.debug(`🔄 Duplicate message ignored: ${messageId}`);
-    return true;
-  }
-  
-  processedMessages.set(messageId, Date.now());
-  return false;
-}
 
 /**
  * Main message event handler - thin router
@@ -60,10 +32,14 @@ export async function handleFeishuMessageEvent(data: any): Promise<void> {
     logger.info(`👤 ${sender}: ${event.text}`);
 
     // Build command context (command name set later in processCommand)
+    const chatType = (event.chatType === 'p2p' || event.chatType === 'group')
+      ? event.chatType
+      : undefined;
     const ctx: CommandContext = {
       senderId: event.senderId,
       chatId: event.chatId,
       messageId: event.messageId,
+      chatType,
       command: '',
       args: '',
       reply: (text: string) => feishu.replyToMessage(event.messageId, text),

@@ -1,4 +1,4 @@
-import type { ToolAdapter } from './types';
+import type { ToolAdapter } from './base';
 import { config } from '../../config/config';
 import logger from '../../utils/logger';
 
@@ -31,12 +31,9 @@ class ToolRegistry {
     return Array.from(this.adapters.values());
   }
 
-  /** List only enabled adapters (based on config.supportedTools) */
+  /** List only enabled adapters (based on config.allowedCodeTools) */
   getEnabled(): ToolAdapter[] {
-    return this.list().filter(adapter => {
-      const key = adapter.name as keyof typeof config.supportedTools;
-      return config.supportedTools[key] !== false;
-    });
+    return this.list().filter(adapter => config.allowedCodeTools.includes(adapter.name));
   }
 }
 

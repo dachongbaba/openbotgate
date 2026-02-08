@@ -11,6 +11,8 @@ export interface UserSession {
   model: string | null;
   agent: string | null;
   cwd: string | null;
+  /** When true, next code run should start a new session (no resume/continue); cleared after that run */
+  newSessionRequested: boolean;
 }
 
 const DEFAULT_SESSION: UserSession = {
@@ -19,6 +21,7 @@ const DEFAULT_SESSION: UserSession = {
   model: null,
   agent: null,
   cwd: null,
+  newSessionRequested: false,
 };
 
 /**
@@ -62,6 +65,26 @@ class SessionManager {
     session.sessionId = null;
     session.model = null;
     session.agent = null;
+    session.newSessionRequested = false;
+    this.sessions.set(userId, session);
+    this.scheduleSave();
+  }
+
+  /** Mark that next code run should start a new session; clears sessionId. Does not call code tool. */
+  requestNewSession(userId: string): void {
+    const session = this.getSession(userId);
+    session.newSessionRequested = true;
+    session.sessionId = null;
+    session.model = null;
+    session.agent = null;
+    this.sessions.set(userId, session);
+    this.scheduleSave();
+  }
+
+  /** Clear the new-session mark after running code with new session. */
+  clearNewSessionRequest(userId: string): void {
+    const session = this.getSession(userId);
+    session.newSessionRequested = false;
     this.sessions.set(userId, session);
     this.scheduleSave();
   }

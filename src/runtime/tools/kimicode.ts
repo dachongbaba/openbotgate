@@ -23,11 +23,14 @@ export class KimiAdapter extends BaseToolAdapter {
 
   buildCommand(prompt: string, options: RunOptions): string {
     const parts = ['kimi', 'ask'];
-    if (options.sessionId) {
-      parts.push('--session', options.sessionId);
-    } else {
-      parts.push('--continue'); // continue last session (MoonshotAI kimi-cli)
+    if (!options.newSession) {
+      if (options.sessionId) {
+        parts.push('--session', options.sessionId);
+      } else {
+        parts.push('--continue'); // continue last session (MoonshotAI kimi-cli)
+      }
     }
+    // newSession: don't pass --session or --continue (start fresh)
     parts.push(`"${this.escapePrompt(prompt)}"`);
     return parts.join(' ');
   }

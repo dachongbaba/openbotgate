@@ -29,7 +29,7 @@ export class OpenClawAdapter extends BaseToolAdapter {
   buildCommand(prompt: string, options: RunOptions): string {
     const parts = ['openclaw', 'agent', '--message', `"${this.escapePrompt(prompt)}"`];
 
-    if (options.sessionId) parts.push('--session-id', options.sessionId);
+    if (!options.newSession && options.sessionId) parts.push('--session-id', options.sessionId);
     if (options.agent) parts.push('--agent', options.agent);
 
     return parts.join(' ');

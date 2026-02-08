@@ -19,6 +19,8 @@ export interface ToolResult {
  * Options for tool execution
  */
 export interface RunOptions {
+  /** When true, start a new session (do not pass sessionId or continue flag) */
+  newSession?: boolean;
   sessionId?: string;
   model?: string;
   agent?: string;

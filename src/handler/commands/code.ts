@@ -43,10 +43,6 @@ export async function executePrompt(
 
   await streamHandler.complete();
 
-  if (result.sessionId) {
-    sessionManager.updateSession(ctx.senderId, { sessionId: result.sessionId });
-  }
-
   const duration = formatDuration(result.duration);
   if (result.success) {
     logger.info(`✅ ${adapter.displayName} 完成 (${duration})`);

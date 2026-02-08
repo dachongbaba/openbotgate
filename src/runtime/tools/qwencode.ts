@@ -6,7 +6,6 @@ import type { RunOptions, ToolCapabilities } from './base';
  * Similar to Claude Code CLI interface.
  * - Execute: qwen -p "prompt"
  * - Session: --resume <id> / --continue
- * - JSON output: --output-format json
  */
 export class QwenCodeAdapter extends BaseToolAdapter {
   readonly name = 'qwencode';
@@ -31,25 +30,9 @@ export class QwenCodeAdapter extends BaseToolAdapter {
       parts.push('--continue'); // continue last session by default
     }
 
-    parts.push('--output-format', 'json');
     parts.push(`"${this.escapePrompt(prompt)}"`);
 
     return parts.join(' ');
-  }
-
-  protected parseSessionId(output: string): string | undefined {
-    try {
-      const lines = output.split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed.startsWith('{')) continue;
-        const obj = JSON.parse(trimmed);
-        if (obj.session_id) return obj.session_id;
-      }
-    } catch {
-      // ignore
-    }
-    return undefined;
   }
 
   async listModels(): Promise<string[]> {

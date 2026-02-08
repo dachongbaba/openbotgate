@@ -7,7 +7,6 @@ import type { RunOptions, ToolCapabilities } from './base';
  * - Session: -r <session> / -c (continue)
  * - Model: --model name
  * - Agent: --agent name
- * - JSON output: --output-format json (for session ID capture)
  */
 export class ClaudeCodeAdapter extends BaseToolAdapter {
   readonly name = 'claudecode';
@@ -34,27 +33,9 @@ export class ClaudeCodeAdapter extends BaseToolAdapter {
 
     if (options.model) parts.push('--model', options.model);
     if (options.agent) parts.push('--agent', options.agent);
-    parts.push('--output-format', 'json');
     parts.push(`"${this.escapePrompt(prompt)}"`);
 
     return parts.join(' ');
-  }
-
-  protected parseSessionId(output: string): string | undefined {
-    // Claude Code JSON output includes session_id
-    try {
-      // Output may contain multiple JSON lines; find the one with session_id
-      const lines = output.split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed.startsWith('{')) continue;
-        const obj = JSON.parse(trimmed);
-        if (obj.session_id) return obj.session_id;
-      }
-    } catch {
-      // Non-JSON output, ignore
-    }
-    return undefined;
   }
 
   async listModels(): Promise<string[]> {

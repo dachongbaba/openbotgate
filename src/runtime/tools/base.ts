@@ -112,18 +112,13 @@ export abstract class BaseToolAdapter implements ToolAdapter {
       });
       const duration = Date.now() - startTime;
 
-      const toolResult: ToolResult = {
+      return {
         tool: this.name,
         success: result.success,
         output: result.stdout,
         error: result.success ? undefined : (result.stderr || 'Command failed'),
         duration,
       };
-
-      const sessionId = this.parseSessionId(result.stdout);
-      if (sessionId) toolResult.sessionId = sessionId;
-
-      return toolResult;
     } catch (error: any) {
       const duration = Date.now() - startTime;
       return {
@@ -134,10 +129,6 @@ export abstract class BaseToolAdapter implements ToolAdapter {
         duration,
       };
     }
-  }
-
-  protected parseSessionId(_output: string): string | undefined {
-    return undefined;
   }
 
   async listModels(): Promise<string[]> {

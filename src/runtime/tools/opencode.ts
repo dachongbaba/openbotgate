@@ -4,7 +4,7 @@ import type { RunOptions, ToolCapabilities, SessionInfo } from './base';
 /**
  * Adapter for OpenCode CLI.
  * - Execute: opencode run "prompt"
- * - Session: -s <id>
+ * - Session: -s <id> / --continue (continue last)
  * - Model: -m provider/model
  * - Agent: --agent name
  * - List models: opencode models
@@ -28,7 +28,11 @@ export class OpenCodeAdapter extends BaseToolAdapter {
   buildCommand(prompt: string, options: RunOptions): string {
     const parts = ['opencode', 'run'];
 
-    if (options.sessionId) parts.push('-s', options.sessionId);
+    if (options.sessionId) {
+      parts.push('-s', options.sessionId);
+    } else {
+      parts.push('--continue'); // continue last session by default
+    }
     if (options.model) parts.push('-m', options.model);
     if (options.agent) parts.push('--agent', options.agent);
 

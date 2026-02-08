@@ -3,10 +3,9 @@ import type { RunOptions, ToolCapabilities } from './base';
 
 /**
  * Adapter for OpenAI Codex CLI.
- * - Execute: codex exec "prompt"
- * - Resume: codex exec resume <id> "prompt"
+ * - Execute: codex exec resume [id|--last] "prompt"
+ * - Session: resume <id> or resume --last (continue most recent in cwd)
  * - Model: -m model
- * - JSON output: --json
  */
 export class CodexAdapter extends BaseToolAdapter {
   readonly name = 'openaicodex';
@@ -23,10 +22,12 @@ export class CodexAdapter extends BaseToolAdapter {
   };
 
   buildCommand(prompt: string, options: RunOptions): string {
-    const parts = ['codex', 'exec'];
+    const parts = ['codex', 'exec', 'resume'];
 
     if (options.sessionId) {
-      parts.push('resume', options.sessionId);
+      parts.push(options.sessionId);
+    } else {
+      parts.push('--last'); // continue most recent session in cwd
     }
 
     if (options.model) parts.push('-m', options.model);
@@ -34,23 +35,6 @@ export class CodexAdapter extends BaseToolAdapter {
     parts.push(`"${this.escapePrompt(prompt)}"`);
 
     return parts.join(' ');
-  }
-
-  protected parseSessionId(output: string): string | undefined {
-    // Codex JSONL output may contain session/conversation ID
-    try {
-      const lines = output.split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed.startsWith('{')) continue;
-        const obj = JSON.parse(trimmed);
-        if (obj.conversation_id) return obj.conversation_id;
-        if (obj.session_id) return obj.session_id;
-      }
-    } catch {
-      // ignore
-    }
-    return undefined;
   }
 
   async listModels(): Promise<string[]> {

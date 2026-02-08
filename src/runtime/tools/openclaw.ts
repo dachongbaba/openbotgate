@@ -8,7 +8,6 @@ import type { RunOptions, ToolCapabilities, SessionInfo } from './base';
  * - Session: --session-id <id>
  * - Agent: --agent <id>
  * - Thinking: --thinking <level>
- * - JSON output: --json
  * - List models: openclaw models list --json
  * - List sessions: openclaw sessions --json
  * - List agents: openclaw agents list --json
@@ -32,25 +31,8 @@ export class OpenClawAdapter extends BaseToolAdapter {
 
     if (options.sessionId) parts.push('--session-id', options.sessionId);
     if (options.agent) parts.push('--agent', options.agent);
-    parts.push('--json');
 
     return parts.join(' ');
-  }
-
-  protected parseSessionId(output: string): string | undefined {
-    try {
-      const lines = output.split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed.startsWith('{')) continue;
-        const obj = JSON.parse(trimmed);
-        if (obj.session_id) return obj.session_id;
-        if (obj.sessionId) return obj.sessionId;
-      }
-    } catch {
-      // ignore
-    }
-    return undefined;
   }
 
   async listModels(): Promise<string[]> {

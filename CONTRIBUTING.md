@@ -1,6 +1,6 @@
-# Contributing to OpenGate
+# Contributing to OpenBotGate
 
-欢迎为 OpenGate 贡献代码！
+欢迎为 OpenBotGate 贡献代码！
 
 ---
 
@@ -25,7 +25,7 @@
 ```bash
 # 克隆仓库
 git clone <repo-url>
-cd opengate
+cd openbotgate
 
 # 安装依赖
 pnpm install

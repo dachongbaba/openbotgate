@@ -62,7 +62,7 @@ const winstonLogger = winston.createLogger({
       )
     }),
     new DailyRotateFile({
-      filename: path.join(logDir, 'opengate-%DATE%.log'),
+      filename: path.join(logDir, 'openbotgate-%DATE%.log'),
       datePattern: 'YYYY-MM-DD',
       zippedArchive: true,
       maxSize: '20m',
@@ -74,7 +74,7 @@ const winstonLogger = winston.createLogger({
 /** 当前日期对应的日志文件名，与 DailyRotateFile 的 %DATE% 一致 */
 function getCurrentLogPath(): string {
   const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  return path.join(logDir, `opengate-${date}.log`);
+  return path.join(logDir, `openbotgate-${date}.log`);
 }
 
 // Custom logger wrapper that captures caller location at call time

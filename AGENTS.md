@@ -1,10 +1,10 @@
-# OpenGate - Agent Guidelines
+# OpenBotGate - Agent Guidelines
 
 AI 编程代理（OpenCode、Claude Code、Cursor 等）的代码库操作指南。
 
 ## 项目概述
 
-OpenGate 是一个通过飞书/Lark 机器人 API 远程执行 AI 编程 CLI 工具的网关服务。
+OpenBotGate 是一个通过飞书/Lark 机器人 API 远程执行 AI 编程 CLI 工具的网关服务。
 
 - 技术栈：TypeScript, Node.js, Feishu SDK, Winston
 - 运行时：Node 20+
@@ -13,19 +13,29 @@ OpenGate 是一个通过飞书/Lark 机器人 API 远程执行 AI 编程 CLI 工
 ## 项目结构
 
 ```
-opengate/
+openbotgate/
 ├── src/
-│   ├── index.ts           # 入口：加载 config、启动 gateway
-│   ├── config/            # 配置加载
-│   ├── gateway/            # 多网关：目录(catalog)、注册表(registry)、Feishu 实现
+│   ├── index.ts           # 入口：加载 config、注册 tools、启动 gateway
+│   ├── debug.ts           # 调试开关与工具
+│   ├── config/            # 配置加载（config.ts）
+│   ├── gateway/           # 多网关：目录(catalog)、注册表(registry)、Feishu 实现、index 统一导出
 │   ├── handler/           # 消息解析、路由、命令
 │   │   ├── parse.ts       # 解析飞书 payload
-│   │   └── commands/      # 按命令拆分
+│   │   ├── dedup.ts       # 去重等
+│   │   ├── commands/      # 按命令拆分（help、status、tasks、code、shell 等）
+│   │   └── code/          # Code 相关命令：new、model、session、agent、workspace
 │   ├── runtime/           # 执行与任务
 │   │   ├── executor.ts    # 底层 spawn/超时
-│   │   ├── cliTools.ts    # opencode/claude/git 封装
-│   │   └── taskManager.ts # 任务队列与状态
-│   └── utils/             # 日志等工具
+│   │   ├── cliTools.ts    # code/shell CLI 工具调用
+│   │   ├── taskManager.ts # 任务队列与状态
+│   │   ├── sessionManager.ts
+│   │   ├── streamHandler.ts
+│   │   └── tools/         # 各 CLI 工具适配器（ToolAdapter）
+│   │       ├── base.ts    # ToolAdapter 接口与基类
+│   │       ├── registry.ts# 适配器注册表
+│   │       ├── index.ts   # registerAll、导出 toolRegistry
+│   │       └── *.ts       # opencode、claudecode、cursorcode、openaicodex 等
+│   └── utils/             # 日志、编码等（logger、encoding）
 ├── test/                  # 测试（与 src 分离）
 ├── AGENTS.md              # 本文件
 ├── CONTRIBUTING.md        # 贡献指南
@@ -44,6 +54,12 @@ npx tsc --noEmit          # 类型检查
 npx jest test/path.test.ts --verbose  # 单文件测试
 DEBUG=true npm run dev    # 启用详细日志
 ```
+
+## 配置要点
+
+- **网关**：`GATEWAY_TYPE`（如 `feishu`）；飞书需 `FEISHU_APP_ID`、`FEISHU_APP_SECRET`、`FEISHU_VERIFICATION_TOKEN`、`FEISHU_DOMAIN`。
+- **执行**：`EXECUTION_TIMEOUT`、`CODE_TIMEOUT`、`MAX_OUTPUT_LENGTH`；Windows 下可设 `SHELL_OUTPUT_ENCODING`（如 `gbk`）以正确显示输出。
+- **白名单**：`ALLOWED_CODE_TOOLS`（Code 适配器，逗号分隔）、`ALLOWED_SHELL_COMMANDS`（Shell 命令首词，逗号分隔）。未设置时使用 `config` 中的默认列表。
 
 ## 代码风格
 
@@ -114,26 +130,26 @@ import type { Task, ToolResult } from './types'
 
 | 目录 | 职责 |
 |------|------|
-| `gateway/` | 多网关抽象(IGateway)、目录(与 OpenClaw 一致)、Feishu 实现；按 `GATEWAY_TYPE` 启动 |
-| `handler/` | 解析 payload、路由命令；调用 runtime 执行 |
-| `handler/commands/` | 每个命令一个文件，导出 `run(ctx)` |
-| `runtime/` | CLI 工具封装、底层执行、任务队列 |
-| `config/` | 加载环境变量、导出 `config` 对象 |
-| `utils/` | 日志、通用工具函数 |
+| `gateway/` | 多网关抽象(IGateway)、目录(catalog)、注册表(registry)、Feishu 实现；`index.ts` 统一导出；按 `GATEWAY_TYPE` 启动 |
+| `handler/` | 解析 payload、去重、路由命令；调用 runtime 执行 |
+| `handler/commands/` | 静态命令：每命令一文件，导出 `run(ctx)`；shell 由 `createShellHandler(name)` 按白名单动态创建 |
+| `handler/code/` | Code 相关命令：`/new`、`/model`、`/session`、`/agent`、`/workspace` 等 |
+| `runtime/` | 底层执行(executor)、任务队列(taskManager)、CLI 调用(cliTools)；`runtime/tools/` 为各 CLI 的 ToolAdapter 及注册表 |
+| `config/` | 加载环境变量、导出 `config`（含 `allowedCodeTools`、`allowedShellCommands` 白名单） |
+| `utils/` | 日志、编码等通用工具 |
 
 ## 扩展指南
 
 ### 添加新命令
 
-1. 在 `handler/commands/` 新建文件（如 `foo.ts`）
-2. 导出 `run(ctx: CommandContext): Promise<void>`
-3. 在 `handler/commands/index.ts` 注册
+1. **静态命令**：在 `handler/commands/` 或 `handler/code/` 新建文件（如 `foo.ts`），导出 `run(ctx: CommandContext): Promise<void>`，在 `handler/commands/index.ts` 的 `commands` 中注册。
+2. **Shell 白名单命令**：在 `config` 的 `allowedShellCommands`（或环境变量 `ALLOWED_SHELL_COMMANDS`）中加入首词，即可通过 `/首词 ...` 调用，无需新文件。
 
-### 添加新 CLI 工具
+### 添加新 CLI 工具（Code 类适配器）
 
-1. 在 `runtime/cliTools.ts` 添加执行方法
-2. 在 `config/config.ts` 的 `supportedTools` 添加开关
-3. 在 `runtime/taskManager.ts` 的 switch 添加 case
+1. 在 `runtime/tools/` 新建适配器文件，实现 `ToolAdapter`（继承或实现 `runtime/tools/base.ts` 的接口）。
+2. 在 `runtime/tools/index.ts` 的 `ALL_ADAPTERS` 中加入该适配器实例，由 `registerAll(toolRegistry)` 统一注册。
+3. 在 `config/config.ts` 的 `DEFAULT_ALLOWED_CODE_TOOLS`（或环境变量 `ALLOWED_CODE_TOOLS`）中加入适配器内部名称，以加入白名单。
 
 ### 添加新网关
 
@@ -144,11 +160,12 @@ import type { Task, ToolResult } from './types'
 
 ## 安全注意事项
 
-1. **Shell 执行**：默认禁用，仅在 `TOOL_SHELL_ENABLED=true` 时启用
-2. **超时**：所有命令执行有超时限制（默认 120s，最大 180s）
-3. **输出截断**：限制输出长度防止内存问题
-4. **敏感信息**：使用 `.env` 存储凭证，不要提交
-5. **输入验证**：验证用户输入和命令参数
+1. **Shell 执行**：通过 `allowedShellCommands` 白名单控制（环境变量 `ALLOWED_SHELL_COMMANDS`），仅列表内首词可执行；默认含 `git`、`dir`、`ls`、`pwd`。
+2. **Code 工具**：通过 `allowedCodeTools` 白名单控制（环境变量 `ALLOWED_CODE_TOOLS`），仅列表内适配器可被调用。
+3. **超时**：所有命令执行有超时限制（默认 120s，最大 180s，见 `MAX_EXECUTION_TIMEOUT_MS`）。
+4. **输出截断**：`config.execution.maxOutputLength` 限制输出长度，防止内存问题。
+5. **敏感信息**：使用 `.env` 存储凭证，不要提交。
+6. **输入验证**：验证用户输入和命令参数。
 
 ## Agent 专用注意事项
 

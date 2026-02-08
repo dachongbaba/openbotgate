@@ -4,7 +4,7 @@ AI 编程代理（OpenCode、Claude Code、Cursor 等）的代码库操作指南
 
 ## 项目概述
 
-OpenBotGate 是一个通过飞书/Lark 机器人 API 远程执行 AI 编程 CLI 工具的网关服务。
+OpenBotGate 是通过飞书/Lark 等聊天渠道远程执行 AI 编程 CLI（OpenCode、Claude Code、Cursor 等）的网关服务。飞书侧使用**官方 SDK 长连接**接收事件，无需本地 HTTP 服务或公网 Webhook 地址。
 
 - 技术栈：TypeScript, Node.js, Feishu SDK, Winston
 - 运行时：Node 20+
@@ -16,31 +16,33 @@ OpenBotGate 是一个通过飞书/Lark 机器人 API 远程执行 AI 编程 CLI 
 openbotgate/
 ├── src/
 │   ├── index.ts           # 入口：加载 config、注册 tools、启动 gateway
-│   ├── debug.ts           # 调试开关与工具
 │   ├── config/            # 配置加载（config.ts）
-│   ├── gateway/           # 多网关：目录(catalog)、注册表(registry)、Feishu 实现、index 统一导出
+│   ├── gateway/           # 多网关：catalog、registry、feishu/telegram/discord/whatsapp/qq、index 统一导出
 │   ├── handler/           # 消息解析、路由、命令
+│   │   ├── index.ts       # 路由入口
 │   │   ├── parse.ts       # 解析飞书 payload
-│   │   ├── dedup.ts       # 去重等
-│   │   ├── commands/      # 按命令拆分（help、status、tasks、code、shell 等）
-│   │   └── code/          # Code 相关命令：new、model、session、agent、workspace
+│   │   ├── dedup.ts       # 去重
+│   │   ├── types.ts
+│   │   ├── commands/      # help、status、tasks、code、shell
+│   │   └── code/          # new、model、session、agent、workspace
 │   ├── runtime/           # 执行与任务
 │   │   ├── executor.ts    # 底层 spawn/超时
-│   │   ├── cliTools.ts    # code/shell CLI 工具调用
+│   │   ├── cliTools.ts    # CLI 调用
 │   │   ├── taskManager.ts # 任务队列与状态
 │   │   ├── sessionManager.ts
 │   │   ├── streamHandler.ts
-│   │   └── tools/         # 各 CLI 工具适配器（ToolAdapter）
-│   │       ├── base.ts    # ToolAdapter 接口与基类
-│   │       ├── registry.ts# 适配器注册表
-│   │       ├── index.ts   # registerAll、导出 toolRegistry
-│   │       └── *.ts       # opencode、claudecode、cursorcode、openaicodex 等
-│   └── utils/             # 日志、编码等（logger、encoding）
-├── test/                  # 测试（与 src 分离）
+│   │   └── tools/         # Code 工具适配器（ToolAdapter）
+│   │       ├── base.ts, registry.ts, index.ts
+│   │       └── opencode、claudecode、cursorcode、openaicodex、qwencode、kimicode、openclaw、nanobot
+│   └── utils/             # logger、encoding
+├── test/                  # 测试（handler、runtime、utils）
+├── docs/                  # GATEWAYS.md、PUBLISHING.md
 ├── AGENTS.md              # 本文件
-├── CONTRIBUTING.md        # 贡献指南
+├── CONTRIBUTING.md
 ├── package.json
-└── tsconfig.json
+├── tsconfig.json
+├── tsconfig.test.json
+└── jest.config.js
 ```
 
 ## 构建与开发
@@ -194,4 +196,4 @@ import type { Task, ToolResult } from './types'
 
 ---
 
-**最后更新**: 2026-02-07
+**最后更新**: 2025-02-08

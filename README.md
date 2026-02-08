@@ -253,6 +253,8 @@ async executeNewTool(
 
 ## 发布（GitHub / npm）
 
+完整流程与 rebase 约定见 **[docs/PUBLISHING.md](docs/PUBLISHING.md)**。
+
 ### 发布前准备
 
 1. **替换仓库地址**：在 `package.json` 中将 `dachongbaba` 改为你的 GitHub 用户名或组织名（若不同）。

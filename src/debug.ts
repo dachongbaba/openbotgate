@@ -7,7 +7,7 @@ process.env.DEBUG = 'true';
 
 // Debug mode: simulate message processing without Feishu connection
 async function debugMode() {
-  logger.info('OpenGate Debug Mode');
+  logger.info('OpenBotGate Debug Mode');
   logger.info('Simulating message processing...');
 
   const gateway = getGateway('feishu');

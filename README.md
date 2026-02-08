@@ -1,6 +1,7 @@
-# OpenGate
+# OpenBotGate
 
-通过飞书等聊天工具的机器人API，远程执行 OpenCode、Claude Code 等 AI 编程CLI工具。
+**AI 编程工具网关** — 通过飞书等聊天工具，在对话里直接唤起 OpenCode、Claude Code 等 AI 编程 CLI。  
+**专为灵感涌现时的你而设计**：想法来了就发一条消息，不必切到终端、不必离开当前上下文。
 
 ## 功能特性
 
@@ -15,13 +16,35 @@
 
 ## 快速开始
 
-### 1. 安装依赖
+### 安装
+
+**方式一：npx 直接运行（无需安装）**
 
 ```bash
-npm install
+npx openbotgate
 ```
 
-### 2. 配置环境变量
+**方式二：全局安装后使用 CLI**
+
+```bash
+npm install -g openbotgate
+openbotgate
+```
+
+**方式三：克隆项目本地开发**
+
+```bash
+git clone https://github.com/dachongbaba/openbotgate.git
+cd openbotgate
+pnpm install
+```
+
+CLI 支持：
+- `openbotgate` — 启动网关服务
+- `openbotgate --help` / `openbotgate -h` — 显示帮助
+- `openbotgate --version` / `openbotgate -v` — 显示版本
+
+### 1. 配置环境变量
 
 复制 `.env.example` 到 `.env`，填入你的飞书应用凭证：
 
@@ -37,20 +60,20 @@ FEISHU_APP_SECRET=your_app_secret_here
 FEISHU_VERIFICATION_TOKEN=your_verification_token_here
 ```
 
-### 3. 启动服务
+### 2. 启动服务
 
 ```bash
-# 开发模式（TypeScript）
-npm run dev
+# 使用 CLI（已全局安装或 npx 时）
+openbotgate
 
-# 生产模式
-npm run build
-npm start
+# 或本地开发
+npm run dev          # 开发模式（热重载）
+npm run build && npm start   # 生产模式
 ```
 
 服务将在 `http://0.0.0.0:3000` 启动，使用 **官方飞书SDK** 提供的Webhook和WebSocket连接模式。
 
-### 4. 配置飞书机器人
+### 3. 配置飞书机器人
 
 1. 登录[飞书开放平台](https://open.feishu.cn/)
 2. 创建应用，获取 App ID 和 App Secret
@@ -130,7 +153,7 @@ npm start
 ## 项目结构
 
 ```
-opengate/
+openbotgate/
 ├── src/
 │   ├── config/           # 配置管理
 │   │   └── config.ts
@@ -227,6 +250,37 @@ async executeNewTool(
 - 📝 命令执行有超时限制，防止长时间运行
 - 🔒 建议使用环境变量存储敏感信息
 - 🛡️ 可添加用户白名单机制控制访问
+
+## 发布（GitHub / npm）
+
+### 发布前准备
+
+1. **替换仓库地址**：在 `package.json` 中将 `dachongbaba` 改为你的 GitHub 用户名或组织名（若不同）。
+2. **LICENSE**：已包含 MIT 许可证，可根据需要修改版权方。
+3. **版本号**：按 [语义化版本](https://semver.org/) 更新 `package.json` 的 `version`。
+
+### 发布到 GitHub
+
+```bash
+# 在 GitHub 创建仓库后
+git remote add origin https://github.com/dachongbaba/openbotgate.git
+git push -u origin main
+```
+
+### 发布到 npm
+
+```bash
+# 首次需要登录
+npm login
+
+# 确认将要发布的文件（可选）
+npm pack --dry-run
+
+# 发布（会先执行 prepublishOnly 即 npm run build）
+npm publish
+```
+
+私有包使用 `npm publish --access restricted`；作用域包如 `@your-org/openbotgate` 首次发布需加 `--access public`。
 
 ## License
 

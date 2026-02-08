@@ -4,7 +4,7 @@ import { getGateway } from './gateway/registry';
 import { handleMessageEvent } from './handler';
 import { toolRegistry, registerAll } from './runtime/tools';
 
-logger.info('🤖 OpenGate - AI Code Gateway starting...');
+logger.info('🤖 OpenBotGate - AI Code Gateway starting...');
 
 registerAll(toolRegistry);
 logger.info(`📦 ${toolRegistry.getEnabled().length} tools registered`);

@@ -23,9 +23,10 @@ export class CursorCodeAdapter extends BaseToolAdapter {
   buildCommand(prompt: string, options: RunOptions): string {
     const parts = ['agent'];
 
-    if (options.sessionId) {
+    if (!options.newSession && options.sessionId) {
       parts.push('--resume', options.sessionId);
     }
+    // newSession or no sessionId: don't pass --resume (new run for Cursor)
 
     parts.push('-p', `"${this.escapePrompt(prompt)}"`);
     return parts.join(' ');

@@ -25,11 +25,14 @@ export class ClaudeCodeAdapter extends BaseToolAdapter {
   buildCommand(prompt: string, options: RunOptions): string {
     const parts = ['claude', '-p'];
 
-    if (options.sessionId) {
-      parts.push('-r', options.sessionId);
-    } else {
-      parts.push('-c'); // continue last session by default
+    if (!options.newSession) {
+      if (options.sessionId) {
+        parts.push('-r', options.sessionId);
+      } else {
+        parts.push('-c'); // continue last session by default
+      }
     }
+    // newSession: don't pass -r or -c (start fresh)
 
     if (options.model) parts.push('--model', options.model);
     if (options.agent) parts.push('--agent', options.agent);

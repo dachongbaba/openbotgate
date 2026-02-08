@@ -28,11 +28,14 @@ export class OpenCodeAdapter extends BaseToolAdapter {
   buildCommand(prompt: string, options: RunOptions): string {
     const parts = ['opencode', 'run'];
 
-    if (options.sessionId) {
-      parts.push('-s', options.sessionId);
-    } else {
-      parts.push('--continue'); // continue last session by default
+    if (!options.newSession) {
+      if (options.sessionId) {
+        parts.push('-s', options.sessionId);
+      } else {
+        parts.push('--continue'); // continue last session by default
+      }
     }
+    // newSession: don't pass -s or --continue (start fresh)
     if (options.model) parts.push('-m', options.model);
     if (options.agent) parts.push('--agent', options.agent);
 

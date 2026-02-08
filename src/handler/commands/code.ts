@@ -28,14 +28,21 @@ export async function executePrompt(
     return;
   }
 
+  const newSession = !!session.newSessionRequested;
+  if (newSession) {
+    sessionManager.clearNewSessionRequest(ctx.senderId);
+  }
+
   const streamHandler = createStreamHandler(ctx.reply);
   const runOpts = {
-    sessionId: session.sessionId ?? undefined,
+    newSession,
+    sessionId: newSession ? undefined : (session.sessionId ?? undefined),
     model: session.model ?? undefined,
     agent: session.agent ?? undefined,
     cwd: session.cwd ?? undefined,
     onOutput: streamHandler.onOutput,
   };
+
   const command = adapter.buildCommand(prompt, runOpts);
   logger.info(`🚀 Running ${adapter.displayName}: ${command}`);
 

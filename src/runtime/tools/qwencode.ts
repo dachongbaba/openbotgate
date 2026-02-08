@@ -24,11 +24,14 @@ export class QwenCodeAdapter extends BaseToolAdapter {
   buildCommand(prompt: string, options: RunOptions): string {
     const parts = ['qwen', '-p'];
 
-    if (options.sessionId) {
-      parts.push('--resume', options.sessionId);
-    } else {
-      parts.push('--continue'); // continue last session by default
+    if (!options.newSession) {
+      if (options.sessionId) {
+        parts.push('--resume', options.sessionId);
+      } else {
+        parts.push('--continue'); // continue last session by default
+      }
     }
+    // newSession: don't pass --resume or --continue (start fresh)
 
     parts.push(`"${this.escapePrompt(prompt)}"`);
 

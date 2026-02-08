@@ -22,13 +22,17 @@ export class CodexAdapter extends BaseToolAdapter {
   };
 
   buildCommand(prompt: string, options: RunOptions): string {
-    const parts = ['codex', 'exec', 'resume'];
+    const parts = ['codex', 'exec'];
 
-    if (options.sessionId) {
-      parts.push(options.sessionId);
-    } else {
-      parts.push('--last'); // continue most recent session in cwd
+    if (!options.newSession) {
+      parts.push('resume');
+      if (options.sessionId) {
+        parts.push(options.sessionId);
+      } else {
+        parts.push('--last'); // continue most recent session in cwd
+      }
     }
+    // newSession: codex exec without resume (start fresh)
 
     if (options.model) parts.push('-m', options.model);
     parts.push('--full-auto');

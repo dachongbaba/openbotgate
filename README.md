@@ -6,9 +6,8 @@
 ## 功能特性
 
 - ✅ **官方SDK集成**：使用飞书官方 `@larksuiteoapi/node-sdk`，确保稳定性和兼容性
-- ✅ **多连接模式**：支持 Webhook 和 WebSocket 两种连接模式
+- ✅ **长连接**：使用飞书官方 SDK 长连接接收事件，无需 Webhook 公网地址
 - ✅ **多工具支持**：OpenCode、Claude Code、Git、Shell 命令执行
-- ✅ **同步/异步执行**：支持同步等待结果和异步后台执行
 - ✅ **任务管理**：查看状态、取消任务、历史记录
 - ✅ **简单配置**：仅需配置 App ID 和 App Secret 即可使用
 - ✅ **安全控制**：Shell 执行默认禁用，可选择性开启
@@ -71,7 +70,7 @@ npm run dev          # 开发模式（热重载）
 npm run build && npm start   # 生产模式
 ```
 
-服务将在 `http://0.0.0.0:3000` 启动，使用 **官方飞书SDK** 提供的Webhook和WebSocket连接模式。
+服务通过 **飞书官方 SDK 长连接** 接收消息，无需部署本地 HTTP 服务或公网地址。
 
 ### 3. 配置飞书机器人
 
@@ -87,68 +86,69 @@ npm run build && npm start   # 生产模式
    - 进入 **事件与回调** 页面
    - 选择 **使用长连接接收事件**（推荐）
    - 添加事件订阅：`im.message.receive_v1`（接收消息）
-   - 设置 Webhook URL：`http://your-domain.com/webhook/feishu`
 5. 发布应用
 
 ## 使用方法
 
-在飞书聊天中，使用以下命令：
+在飞书聊天中，可直接发送**纯文本**（不带 `/`）作为提示词，使用当前选中的 Code 工具执行；或使用以下命令：
 
-### 工具执行
+### Code 工具与会话
 
-```
-/opencode <prompt>    # 执行 OpenCode
-/claudecode <prompt> # 执行 Claude Code
-/git <command>       # 执行 Git 命令
-/shell <command>     # 执行 Shell 命令（需要启用）
-```
+| 命令 | 说明 |
+|------|------|
+| `/code` | 显示当前工具及可用工具列表 |
+| `/code <tool>` | 切换默认工具（如 opencode、claude、codex、qwen、kimi、openclaw、nanobot、cursor） |
+| `/code <tool> "prompt"` | 使用指定工具一次性执行提示词 |
+| `/new` | 新建会话（清空历史，取消当前任务） |
+| `/session` | 列出会话；`/session <id>` 切换到指定会话 |
+| `/model` | 列出当前工具可用模型；`/model <name>` 设置模型；`/model reset` 恢复默认 |
+| `/agent` | 列出当前工具可用 Agent；`/agent <name>` 设置 Agent；`/agent reset` 恢复默认 |
+| `/workspace` | 显示当前工作目录；`/workspace <path>` 设置工作目录；`/workspace reset` 恢复默认 |
 
-### 执行模式
+### Shell 命令
 
-```
-/sync <tool> <command>  # 同步执行，等待结果
-/async <tool> <command> # 异步执行，完成后通知
-```
+在配置中启用的 Shell 命令可通过 `/<命令名> <参数>` 执行，例如：`/git status`。具体可用命令由 `ALLOWED_SHELL_COMMANDS` 配置决定。
 
-### 任务管理
+### 任务与系统
 
-```
-/help     # 显示帮助信息
-/status   # 显示系统状态
-/tasks    # 列出运行中的任务
-/cancel <task_id>  # 取消任务
-```
+| 命令 | 说明 |
+|------|------|
+| `/help` | 显示帮助信息 |
+| `/status` | 显示系统状态 |
+| `/tasks` | 列出当前用户运行中的任务 |
+| `/cancel <task_id>` | 取消指定任务 |
 
 ### 使用示例
 
 ```
-/opencode 写一个计算斐波那契数列的函数
+写一个计算斐波那契数列的函数          # 用当前工具执行
 
-/git status
+/code opencode                        # 切换到 OpenCode
+/code claude "为这个项目生成单元测试"  # 用 Claude 一次性执行
 
-/claudecode 为这个项目生成单元测试
+/new                                  # 新建会话
+/model                                # 查看可用模型
+/workspace /path/to/project           # 设置工作目录
 
-/sync opencode 总结这段代码的含义
-
-/async claude 为整个项目生成API文档
+/tasks                                # 查看运行中的任务
+/cancel abc-123                       # 取消任务
 ```
 
 ## 配置文件说明
 
 | 配置项 | 说明 | 默认值 |
 |-------|------|-------|
-| FEISHU_APP_ID | 飞书应用ID | 必填 |
+| FEISHU_APP_ID | 飞书应用 ID | 必填 |
 | FEISHU_APP_SECRET | 飞书应用密钥 | 必填 |
 | FEISHU_VERIFICATION_TOKEN | 飞书事件订阅验证令牌 | 可选 |
-| FEISHU_DOMAIN | 飞书域名（"feishu"国内版，"lark"国际版） | feishu |
-| SERVER_HOST | 服务绑定地址 | 0.0.0.0 |
-| SERVER_PORT | 服务端口 | 3000 |
-| EXECUTION_TIMEOUT | 命令执行超时时间(毫秒) | 120000 |
-| MAX_OUTPUT_LENGTH | 最大输出长度 | 10000 |
-| TOOL_OPENCODE_ENABLED | 启用 OpenCode | true |
-| TOOL_CLAUDE_CODE_ENABLED | 启用 Claude Code | true |
-| TOOL_SHELL_ENABLED | 启用 Shell 执行 | false |
-| TOOL_GIT_ENABLED | 启用 Git | true |
+| FEISHU_DOMAIN | 飞书域名（"feishu" 国内版，"lark" 国际版） | feishu |
+| GATEWAY_TYPE | 网关类型（当前仅实现 feishu / lark） | feishu |
+| EXECUTION_TIMEOUT | 命令执行超时时间（毫秒，上限 180000） | 120000 |
+| CODE_TIMEOUT | Code 工具单独超时（毫秒，可选） | — |
+| MAX_OUTPUT_LENGTH | 单次输出最大长度 | 10000 |
+| SHELL_OUTPUT_ENCODING | Shell 输出编码（如 gbk，可选） | 系统编码 |
+| ALLOWED_CODE_TOOLS | 允许的 Code 工具，逗号分隔（如 opencode,claude,cursor） | opencode,cursorcode,claudecode,openaicodex,qwencode,kimicode,openclaw,nanobot |
+| ALLOWED_SHELL_COMMANDS | 允许的 Shell 命令首词，逗号分隔（如 git,dir,ls,pwd） | git,dir,ls,pwd |
 
 ## 项目结构
 
@@ -158,38 +158,70 @@ openbotgate/
 │   ├── config/           # 配置管理
 │   │   └── config.ts
 │   ├── gateway/          # 外部平台网关
-│   │   └── feishu.ts     # 飞书API集成
+│   │   ├── index.ts      # 网关注册与分发
+│   │   ├── catalog.ts    # 网关目录
+│   │   ├── registry.ts   # 网关注册表
+│   │   ├── types.ts
+│   │   ├── feishu.ts     # 飞书 API 集成
+│   │   ├── telegram.ts
+│   │   ├── discord.ts
+│   │   ├── whatsapp.ts
+│   │   └── qq.ts
 │   ├── handler/          # 消息处理
 │   │   ├── index.ts      # 路由入口
 │   │   ├── parse.ts      # 消息解析
-│   │   ├── types.ts      # 类型定义
-│   │   └── commands/     # 命令处理器
-│   │       ├── index.ts  # 命令注册
-│   │       ├── utils.ts  # 共享工具
-│   │       ├── opencode.ts
-│   │       ├── claude.ts
-│   │       ├── git.ts
-│   │       ├── shell.ts
-│   │       ├── sync.ts
-│   │       ├── async.ts
-│   │       ├── tasks.ts
-│   │       ├── cancel.ts
-│   │       ├── status.ts
-│   │       └── help.ts
-│   ├── runtime/          # 运行时服务
+│   │   ├── dedup.ts      # 去重
+│   │   ├── types.ts
+│   │   ├── commands/     # 命令处理器
+│   │   │   ├── index.ts  # 命令注册
+│   │   │   ├── code.ts   # /code 与默认执行
+│   │   │   ├── help.ts
+│   │   │   ├── shell.ts
+│   │   │   ├── status.ts
+│   │   │   └── tasks.ts  # /tasks、/cancel
+│   │   └── code/         # Code 相关命令
+│   │       ├── new.ts    # /new
+│   │       ├── model.ts  # /model
+│   │       ├── session.ts
+│   │       ├── agent.ts
+│   │       └── workspace.ts
+│   ├── runtime/          # 运行时
 │   │   ├── executor.ts   # 命令执行器
-│   │   ├── cliTools.ts   # CLI工具封装
-│   │   └── taskManager.ts # 任务管理
-│   ├── utils/            # 通用工具
-│   │   └── logger.ts
-│   └── index.ts          # 入口文件
-├── test/                 # 测试文件
+│   │   ├── cliTools.ts   # CLI 调用
+│   │   ├── sessionManager.ts
+│   │   ├── streamHandler.ts
+│   │   ├── taskManager.ts
+│   │   └── tools/        # Code 工具适配器
+│   │       ├── registry.ts
+│   │       ├── base.ts
+│   │       ├── opencode.ts
+│   │       ├── claudecode.ts
+│   │       ├── cursorcode.ts
+│   │       ├── openaicodex.ts
+│   │       ├── qwencode.ts
+│   │       ├── kimicode.ts
+│   │       ├── openclaw.ts
+│   │       └── nanobot.ts
+│   ├── utils/
+│   │   ├── logger.ts
+│   │   └── encoding.ts
+│   └── index.ts          # 入口
+├── test/
 │   ├── handler/
-│   └── runtime/
-├── AGENTS.md             # AI编程指南
-├── CONTRIBUTING.md       # 贡献指南
+│   │   ├── parse.test.ts
+│   │   └── commands/
+│   ├── runtime/
+│   └── utils/
+├── docs/
+│   ├── GATEWAYS.md
+│   └── PUBLISHING.md
+├── AGENTS.md
+├── CONTRIBUTING.md
 ├── package.json
 ├── tsconfig.json
+├── tsconfig.test.json
+├── jest.config.js
+├── nodemon.json
 └── .env.example
 ```
 

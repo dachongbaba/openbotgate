@@ -59,12 +59,12 @@ DEBUG=true npm run dev    # 启用详细日志
 
 ## 配置要点
 
-- **配置文件**：优先从当前工作目录读取 `openbotgate.yml`、`openbotgate.yaml` 或 `openbotgate.json`（YAML 支持注释，便于维护）。可复制 `openbotgate.example.yml` 为 `openbotgate.yml` 后修改。
-- **环境变量覆盖**：仍支持 `.env`；环境变量可覆盖配置文件中的同名字段（适合敏感信息如 `FEISHU_APP_SECRET`）。
+- **配置文件**：从当前工作目录读取 `openbotgate.yml`、`openbotgate.yaml` 或 `openbotgate.json`（YAML 支持注释）。可复制 `openbotgate.example.yml` 为 `openbotgate.yml` 后修改。**不再通过环境变量加载配置**，所有配置写在配置文件中。
 - **网关**：配置中 `gateway.type`（如 `feishu`）；飞书需 `feishu.appId`、`feishu.appSecret`、`feishu.verificationToken`、`feishu.domain`。
 - **执行**：`execution.timeout`、`execution.codeTimeout`、`execution.maxOutputLength`；Windows 下可设 `execution.shellOutputEncoding`（如 `gbk`）。
 - **白名单**：`allowedCodeTools`、`allowedShellCommands` 列表；未在文件中设置时使用默认列表。
 - **Code 命令覆盖**：`codeToolCommandOverrides`（如 `claudecode: claude.ps1`），用于某适配器实际调用的命令/脚本。
+- **Shell 命令覆盖**：`shellCommandOverrides`（如 `git: git.ps1`），用于某 shell 命令首词实际调用的命令/脚本。
 
 ## 代码风格
 

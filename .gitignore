@@ -84,6 +84,8 @@ codex.sh
 opencode.json
 opencode.ps1
 opencode.sh
+git-push.ps1
+git-push.sh
 
 # 本地配置文件（可从 openbotgate.example.yml 复制）
 openbotgate.yml

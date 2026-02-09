@@ -23,7 +23,7 @@ export class ClaudeCodeAdapter extends BaseToolAdapter {
   };
 
   buildCommand(prompt: string, options: RunOptions): string {
-    const parts = ['claude', '-p'];
+    const parts = [this.getExecutable(), '-p'];
 
     if (!options.newSession) {
       if (options.sessionId) {

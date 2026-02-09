@@ -22,7 +22,7 @@ export class CodexAdapter extends BaseToolAdapter {
   };
 
   buildCommand(prompt: string, options: RunOptions): string {
-    const parts = ['codex', 'exec'];
+    const parts = [this.getExecutable(), 'exec'];
 
     if (!options.newSession) {
       parts.push('resume');

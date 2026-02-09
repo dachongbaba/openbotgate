@@ -26,7 +26,7 @@ export class NanobotAdapter extends BaseToolAdapter {
   };
 
   buildCommand(prompt: string, options: RunOptions): string {
-    const parts = ['nanobot', 'agent', '--message', `"${this.escapePrompt(prompt)}"`];
+    const parts = [this.getExecutable(), 'agent', '--message', `"${this.escapePrompt(prompt)}"`];
 
     if (!options.newSession && options.sessionId) {
       parts.push('--session', options.sessionId);

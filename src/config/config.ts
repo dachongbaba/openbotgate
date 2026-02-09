@@ -1,30 +1,21 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import * as yaml from 'js-yaml';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-/** 最大允许执行超时（毫秒），避免 OpenCode 等命令长时间挂起导致用户等待过久 */
-export const MAX_EXECUTION_TIMEOUT_MS = 180000; // 3 minutes
+/** 最大允许执行超时（毫秒） */
+export const MAX_EXECUTION_TIMEOUT_MS = 180000;
 
-/** 默认允许的 Code 类工具（adapter name） */
 const DEFAULT_ALLOWED_CODE_TOOLS = [
-  'opencode',
-  'cursorcode',
-  'claudecode',
-  'openaicodex',
-  'qwencode',
-  'kimicode',
-  'openclaw',
-  'nanobot',
+  'opencode', 'cursorcode', 'claudecode', 'openaicodex',
+  'qwencode', 'kimicode', 'openclaw', 'nanobot',
 ];
-
-/** 默认允许的 Shell 命令首词 */
 const DEFAULT_ALLOWED_SHELL_COMMANDS = ['git', 'dir', 'ls', 'pwd'];
 
 export interface BotConfig {
-  /** Active gateway type (feishu, lark, telegram, etc.). Only feishu is implemented. */
-  gateway: {
-    type: string;
-  };
+  gateway: { type: string };
   feishu: {
     appId: string;
     appSecret: string;
@@ -44,80 +35,177 @@ export interface BotConfig {
     timeout: number;
     codeTimeout?: number;
     maxOutputLength: number;
-    /** Override shell stdout/stderr encoding (e.g. gbk). When set, used instead of chcp/LANG. */
     shellOutputEncoding?: string;
   };
-  /** 允许执行的 Code 类工具（adapter name 白名单） */
   allowedCodeTools: string[];
-  /** 允许在 Shell 中执行的命令首词白名单 */
   allowedShellCommands: string[];
+  codeToolCommandOverrides: Record<string, string>;
 }
 
-function parseStringList(envValue: string | undefined, defaultList: string[]): string[] {
-  if (envValue == null || envValue === '') return defaultList;
-  return envValue.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+/** 配置文件中的可选结构（部分字段可省略） */
+type RawConfig = Partial<{
+  gateway: Partial<{ type: string }>;
+  feishu: Partial<BotConfig['feishu']>;
+  telegram: Partial<BotConfig['telegram']>;
+  whatsapp: Partial<NonNullable<BotConfig['whatsapp']>>;
+  discord: Partial<BotConfig['discord']>;
+  qqGuild: Partial<NonNullable<BotConfig['qqGuild']>>;
+  execution: Partial<BotConfig['execution']>;
+  allowedCodeTools: string[];
+  allowedShellCommands: string[];
+  codeToolCommandOverrides: Record<string, string>;
+}>;
+
+function defaultConfig(): BotConfig {
+  return {
+    gateway: { type: 'feishu' },
+    feishu: {
+      appId: '',
+      appSecret: '',
+      verificationToken: undefined,
+      domain: 'feishu',
+    },
+    telegram: undefined,
+    whatsapp: undefined,
+    discord: undefined,
+    qqGuild: undefined,
+    execution: {
+      timeout: 120000,
+      codeTimeout: undefined,
+      maxOutputLength: 10000,
+      shellOutputEncoding: undefined,
+    },
+    allowedCodeTools: [...DEFAULT_ALLOWED_CODE_TOOLS],
+    allowedShellCommands: [...DEFAULT_ALLOWED_SHELL_COMMANDS],
+    codeToolCommandOverrides: {},
+  };
 }
 
-function normalizeGatewayType(raw: string | undefined): string {
-  const v = (raw ?? '').trim().toLowerCase();
-  if (v === 'lark') return 'feishu';
-  return v || 'feishu';
+const CONFIG_NAMES = ['openbotgate.yml', 'openbotgate.yaml', 'openbotgate.json'];
+
+function findConfigPath(): string | null {
+  const cwd = process.cwd();
+  for (const name of CONFIG_NAMES) {
+    const p = path.join(cwd, name);
+    if (fs.existsSync(p)) return p;
+  }
+  return null;
+}
+
+function parseConfigFile(filePath: string): RawConfig {
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.json') {
+    return JSON.parse(raw) as RawConfig;
+  }
+  if (ext === '.yml' || ext === '.yaml') {
+    return (yaml.load(raw) as RawConfig) ?? {};
+  }
+  return {};
+}
+
+function mergeDeep<T extends object>(target: T, source: Partial<T> | undefined): T {
+  if (source == null) return target;
+  const out = { ...target } as T;
+  for (const key of Object.keys(source) as (keyof T)[]) {
+    const s = source[key];
+    if (s === undefined) continue;
+    const t = (out as Record<string, unknown>)[key as string];
+    if (Array.isArray(s)) {
+      (out as Record<string, unknown>)[key as string] = s;
+    } else if (t != null && typeof t === 'object' && !Array.isArray(t) && typeof s === 'object' && s !== null && !Array.isArray(s)) {
+      (out as Record<string, unknown>)[key as string] = mergeDeep(
+        t as object,
+        s as object
+      );
+    } else {
+      (out as Record<string, unknown>)[key as string] = s;
+    }
+  }
+  return out;
+}
+
+function applyEnvOverrides(cfg: BotConfig): BotConfig {
+  const env = process.env;
+  const gatewayType = (env.GATEWAY_TYPE ?? cfg.gateway.type).trim().toLowerCase();
+  return {
+    ...cfg,
+    gateway: { type: gatewayType === 'lark' ? 'feishu' : gatewayType || 'feishu' },
+    feishu: {
+      appId: env.FEISHU_APP_ID ?? cfg.feishu.appId,
+      appSecret: env.FEISHU_APP_SECRET ?? cfg.feishu.appSecret,
+      verificationToken: env.FEISHU_VERIFICATION_TOKEN ?? cfg.feishu.verificationToken,
+      domain: (env.FEISHU_DOMAIN as 'feishu' | 'lark') || cfg.feishu.domain || 'feishu',
+    },
+    telegram: env.TELEGRAM_BOT_TOKEN ? { token: env.TELEGRAM_BOT_TOKEN } : cfg.telegram,
+    whatsapp:
+      env.WHATSAPP_SESSION_PATH || env.WHATSAPP_LOG_QR
+        ? {
+            sessionPath: env.WHATSAPP_SESSION_PATH?.trim() || cfg.whatsapp?.sessionPath,
+            logQr: env.WHATSAPP_LOG_QR === 'true',
+          }
+        : cfg.whatsapp,
+    discord: env.DISCORD_BOT_TOKEN ? { token: env.DISCORD_BOT_TOKEN } : cfg.discord,
+    qqGuild:
+      env.QQ_GUILD_APP_ID && env.QQ_GUILD_TOKEN
+        ? {
+            appID: env.QQ_GUILD_APP_ID,
+            token: env.QQ_GUILD_TOKEN,
+            intents: env.QQ_GUILD_INTENTS
+              ? env.QQ_GUILD_INTENTS.split(',').map((s) => s.trim()).filter(Boolean)
+              : cfg.qqGuild?.intents ?? ['PUBLIC_GUILD_MESSAGES', 'DIRECT_MESSAGE'],
+            sandbox: env.QQ_GUILD_SANDBOX === 'true',
+          }
+        : cfg.qqGuild,
+    execution: {
+      timeout: Math.min(
+        parseInt(env.EXECUTION_TIMEOUT ?? String(cfg.execution.timeout), 10) || 120000,
+        MAX_EXECUTION_TIMEOUT_MS
+      ),
+      codeTimeout: env.CODE_TIMEOUT
+        ? Math.min(parseInt(env.CODE_TIMEOUT, 10), MAX_EXECUTION_TIMEOUT_MS)
+        : cfg.execution.codeTimeout,
+      maxOutputLength: parseInt(env.MAX_OUTPUT_LENGTH ?? String(cfg.execution.maxOutputLength), 10) || 10000,
+      shellOutputEncoding: env.SHELL_OUTPUT_ENCODING?.trim() ?? cfg.execution.shellOutputEncoding,
+    },
+    allowedCodeTools: env.ALLOWED_CODE_TOOLS
+      ? env.ALLOWED_CODE_TOOLS.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)
+      : cfg.allowedCodeTools,
+    allowedShellCommands: env.ALLOWED_SHELL_COMMANDS
+      ? env.ALLOWED_SHELL_COMMANDS.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)
+      : cfg.allowedShellCommands,
+    codeToolCommandOverrides: (() => {
+      if (env.CODE_TOOL_COMMANDS) {
+        const out: Record<string, string> = {};
+        for (const pair of env.CODE_TOOL_COMMANDS.split(',').map((s) => s.trim()).filter(Boolean)) {
+          const idx = pair.indexOf(':');
+          if (idx > 0) {
+            const k = pair.slice(0, idx).trim().toLowerCase();
+            const v = pair.slice(idx + 1).trim();
+            if (k && v) out[k] = v;
+          }
+        }
+        return out;
+      }
+      return cfg.codeToolCommandOverrides;
+    })(),
+  };
+}
+
+function rawToConfig(raw: RawConfig): BotConfig {
+  const def = defaultConfig();
+  const merged = mergeDeep(def, raw as Partial<BotConfig>);
+  if (merged.execution.timeout > MAX_EXECUTION_TIMEOUT_MS) {
+    merged.execution.timeout = MAX_EXECUTION_TIMEOUT_MS;
+  }
+  return merged;
 }
 
 export function loadConfig(): BotConfig {
-  return {
-    gateway: {
-      type: normalizeGatewayType(process.env.GATEWAY_TYPE),
-    },
-    feishu: {
-      appId: process.env.FEISHU_APP_ID || '',
-      appSecret: process.env.FEISHU_APP_SECRET || '',
-      verificationToken: process.env.FEISHU_VERIFICATION_TOKEN,
-      domain: (process.env.FEISHU_DOMAIN as 'feishu' | 'lark') || 'feishu',
-    },
-    telegram: process.env.TELEGRAM_BOT_TOKEN ? { token: process.env.TELEGRAM_BOT_TOKEN } : undefined,
-    whatsapp:
-      process.env.WHATSAPP_SESSION_PATH || process.env.WHATSAPP_LOG_QR
-        ? {
-            sessionPath: process.env.WHATSAPP_SESSION_PATH?.trim() || undefined,
-            logQr: process.env.WHATSAPP_LOG_QR === 'true',
-          }
-        : undefined,
-    discord: process.env.DISCORD_BOT_TOKEN ? { token: process.env.DISCORD_BOT_TOKEN } : undefined,
-    qqGuild:
-      process.env.QQ_GUILD_APP_ID && process.env.QQ_GUILD_TOKEN
-        ? {
-            appID: process.env.QQ_GUILD_APP_ID,
-            token: process.env.QQ_GUILD_TOKEN,
-            intents: process.env.QQ_GUILD_INTENTS
-              ? process.env.QQ_GUILD_INTENTS.split(',').map((s) => s.trim()).filter(Boolean)
-              : ['PUBLIC_GUILD_MESSAGES', 'DIRECT_MESSAGE'],
-            sandbox: process.env.QQ_GUILD_SANDBOX === 'true',
-          }
-        : undefined,
-    execution: {
-      timeout: Math.min(
-        parseInt(process.env.EXECUTION_TIMEOUT || '120000', 10),
-        MAX_EXECUTION_TIMEOUT_MS
-      ),
-      codeTimeout: process.env.CODE_TIMEOUT
-        ? Math.min(
-            parseInt(process.env.CODE_TIMEOUT, 10),
-            MAX_EXECUTION_TIMEOUT_MS
-          )
-        : undefined,
-      maxOutputLength: parseInt(process.env.MAX_OUTPUT_LENGTH || '10000', 10),
-      shellOutputEncoding: process.env.SHELL_OUTPUT_ENCODING?.trim() || undefined,
-    },
-    allowedCodeTools: parseStringList(
-      process.env.ALLOWED_CODE_TOOLS,
-      DEFAULT_ALLOWED_CODE_TOOLS
-    ),
-    allowedShellCommands: parseStringList(
-      process.env.ALLOWED_SHELL_COMMANDS,
-      DEFAULT_ALLOWED_SHELL_COMMANDS
-    ),
-  };
+  const def = defaultConfig();
+  const configPath = findConfigPath();
+  const fileConfig = configPath ? rawToConfig(parseConfigFile(configPath)) : def;
+  return applyEnvOverrides(fileConfig);
 }
 
 export const config = loadConfig();

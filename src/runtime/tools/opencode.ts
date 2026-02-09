@@ -26,7 +26,7 @@ export class OpenCodeAdapter extends BaseToolAdapter {
   };
 
   buildCommand(prompt: string, options: RunOptions): string {
-    const parts = ['opencode', 'run'];
+    const parts = [this.getExecutable(), 'run'];
 
     if (!options.newSession) {
       if (options.sessionId) {
@@ -44,13 +44,13 @@ export class OpenCodeAdapter extends BaseToolAdapter {
   }
 
   async listModels(): Promise<string[]> {
-    const output = await this.runHelper('opencode models');
+    const output = await this.runHelper(`${this.getExecutable()} models`);
     if (!output) return [];
     return output.split('\n').map(l => l.trim()).filter(Boolean);
   }
 
   async listSessions(): Promise<SessionInfo[]> {
-    const output = await this.runHelper('opencode session list');
+    const output = await this.runHelper(`${this.getExecutable()} session list`);
     if (!output) return [];
 
     // Parse table output - each line typically: ID  Title  Updated
@@ -71,7 +71,7 @@ export class OpenCodeAdapter extends BaseToolAdapter {
   }
 
   async listAgents(): Promise<string[]> {
-    const output = await this.runHelper('opencode agent list');
+    const output = await this.runHelper(`${this.getExecutable()} agent list`);
     if (!output) return [];
     return output.split('\n').map(l => l.trim()).filter(Boolean);
   }

@@ -68,7 +68,8 @@ export class CLITools {
   }
 
   private async runShell(command: string, options: ToolOptions = {}): Promise<ToolResult> {
-    const firstWord = command.trim().split(/\s+/)[0]?.toLowerCase() || '';
+    const parts = command.trim().split(/\s+/);
+    const firstWord = parts[0]?.toLowerCase() || '';
     if (!config.allowedShellCommands.includes(firstWord)) {
       return {
         tool: 'shell',
@@ -78,6 +79,10 @@ export class CLITools {
         duration: 0,
       };
     }
+
+    const executable = config.shellCommandOverrides[firstWord] ?? firstWord;
+    const rest = parts.slice(1).join(' ');
+    const effectiveCommand = rest ? `${executable} ${rest}` : executable;
 
     const startTime = Date.now();
     const { onOutput, ...execOptions } = options;
@@ -91,7 +96,7 @@ export class CLITools {
         }
       : undefined;
 
-    const result = await executor.execute(command, { ...execOptions, onStdout, useShellEncoding: true });
+    const result = await executor.execute(effectiveCommand, { ...execOptions, onStdout, useShellEncoding: true });
     const duration = Date.now() - startTime;
 
     return {

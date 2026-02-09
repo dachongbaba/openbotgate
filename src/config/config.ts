@@ -1,9 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
 
 /** 最大允许执行超时（毫秒） */
 export const MAX_EXECUTION_TIMEOUT_MS = 180000;
@@ -40,6 +37,8 @@ export interface BotConfig {
   allowedCodeTools: string[];
   allowedShellCommands: string[];
   codeToolCommandOverrides: Record<string, string>;
+  /** Shell 命令可执行文件覆盖（命令首词 -> 实际调用的命令/脚本），如 git -> git.ps1 */
+  shellCommandOverrides: Record<string, string>;
 }
 
 /** 配置文件中的可选结构（部分字段可省略） */
@@ -54,6 +53,7 @@ type RawConfig = Partial<{
   allowedCodeTools: string[];
   allowedShellCommands: string[];
   codeToolCommandOverrides: Record<string, string>;
+  shellCommandOverrides: Record<string, string>;
 }>;
 
 function defaultConfig(): BotConfig {
@@ -78,6 +78,7 @@ function defaultConfig(): BotConfig {
     allowedCodeTools: [...DEFAULT_ALLOWED_CODE_TOOLS],
     allowedShellCommands: [...DEFAULT_ALLOWED_SHELL_COMMANDS],
     codeToolCommandOverrides: {},
+    shellCommandOverrides: {},
   };
 }
 
@@ -125,73 +126,6 @@ function mergeDeep<T extends object>(target: T, source: Partial<T> | undefined):
   return out;
 }
 
-function applyEnvOverrides(cfg: BotConfig): BotConfig {
-  const env = process.env;
-  const gatewayType = (env.GATEWAY_TYPE ?? cfg.gateway.type).trim().toLowerCase();
-  return {
-    ...cfg,
-    gateway: { type: gatewayType === 'lark' ? 'feishu' : gatewayType || 'feishu' },
-    feishu: {
-      appId: env.FEISHU_APP_ID ?? cfg.feishu.appId,
-      appSecret: env.FEISHU_APP_SECRET ?? cfg.feishu.appSecret,
-      verificationToken: env.FEISHU_VERIFICATION_TOKEN ?? cfg.feishu.verificationToken,
-      domain: (env.FEISHU_DOMAIN as 'feishu' | 'lark') || cfg.feishu.domain || 'feishu',
-    },
-    telegram: env.TELEGRAM_BOT_TOKEN ? { token: env.TELEGRAM_BOT_TOKEN } : cfg.telegram,
-    whatsapp:
-      env.WHATSAPP_SESSION_PATH || env.WHATSAPP_LOG_QR
-        ? {
-            sessionPath: env.WHATSAPP_SESSION_PATH?.trim() || cfg.whatsapp?.sessionPath,
-            logQr: env.WHATSAPP_LOG_QR === 'true',
-          }
-        : cfg.whatsapp,
-    discord: env.DISCORD_BOT_TOKEN ? { token: env.DISCORD_BOT_TOKEN } : cfg.discord,
-    qqGuild:
-      env.QQ_GUILD_APP_ID && env.QQ_GUILD_TOKEN
-        ? {
-            appID: env.QQ_GUILD_APP_ID,
-            token: env.QQ_GUILD_TOKEN,
-            intents: env.QQ_GUILD_INTENTS
-              ? env.QQ_GUILD_INTENTS.split(',').map((s) => s.trim()).filter(Boolean)
-              : cfg.qqGuild?.intents ?? ['PUBLIC_GUILD_MESSAGES', 'DIRECT_MESSAGE'],
-            sandbox: env.QQ_GUILD_SANDBOX === 'true',
-          }
-        : cfg.qqGuild,
-    execution: {
-      timeout: Math.min(
-        parseInt(env.EXECUTION_TIMEOUT ?? String(cfg.execution.timeout), 10) || 120000,
-        MAX_EXECUTION_TIMEOUT_MS
-      ),
-      codeTimeout: env.CODE_TIMEOUT
-        ? Math.min(parseInt(env.CODE_TIMEOUT, 10), MAX_EXECUTION_TIMEOUT_MS)
-        : cfg.execution.codeTimeout,
-      maxOutputLength: parseInt(env.MAX_OUTPUT_LENGTH ?? String(cfg.execution.maxOutputLength), 10) || 10000,
-      shellOutputEncoding: env.SHELL_OUTPUT_ENCODING?.trim() ?? cfg.execution.shellOutputEncoding,
-    },
-    allowedCodeTools: env.ALLOWED_CODE_TOOLS
-      ? env.ALLOWED_CODE_TOOLS.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)
-      : cfg.allowedCodeTools,
-    allowedShellCommands: env.ALLOWED_SHELL_COMMANDS
-      ? env.ALLOWED_SHELL_COMMANDS.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)
-      : cfg.allowedShellCommands,
-    codeToolCommandOverrides: (() => {
-      if (env.CODE_TOOL_COMMANDS) {
-        const out: Record<string, string> = {};
-        for (const pair of env.CODE_TOOL_COMMANDS.split(',').map((s) => s.trim()).filter(Boolean)) {
-          const idx = pair.indexOf(':');
-          if (idx > 0) {
-            const k = pair.slice(0, idx).trim().toLowerCase();
-            const v = pair.slice(idx + 1).trim();
-            if (k && v) out[k] = v;
-          }
-        }
-        return out;
-      }
-      return cfg.codeToolCommandOverrides;
-    })(),
-  };
-}
-
 function rawToConfig(raw: RawConfig): BotConfig {
   const def = defaultConfig();
   const merged = mergeDeep(def, raw as Partial<BotConfig>);
@@ -204,8 +138,7 @@ function rawToConfig(raw: RawConfig): BotConfig {
 export function loadConfig(): BotConfig {
   const def = defaultConfig();
   const configPath = findConfigPath();
-  const fileConfig = configPath ? rawToConfig(parseConfigFile(configPath)) : def;
-  return applyEnvOverrides(fileConfig);
+  return configPath ? rawToConfig(parseConfigFile(configPath)) : def;
 }
 
 export const config = loadConfig();

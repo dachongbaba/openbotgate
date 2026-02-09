@@ -22,7 +22,7 @@ export class KimiAdapter extends BaseToolAdapter {
   };
 
   buildCommand(prompt: string, options: RunOptions): string {
-    const parts = ['kimi', 'ask'];
+    const parts = [this.getExecutable(), 'ask'];
     if (!options.newSession) {
       if (options.sessionId) {
         parts.push('--session', options.sessionId);

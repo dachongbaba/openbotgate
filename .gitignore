@@ -75,3 +75,15 @@ USER.md
 logs/
 dist/
 data/
+
+
+claude.ps1
+claude.sh
+opencode.json
+opencode.ps1
+opencode.sh
+
+# 本地配置文件（可从 openbotgate.example.yml 复制）
+openbotgate.yml
+openbotgate.yaml
+openbotgate.json

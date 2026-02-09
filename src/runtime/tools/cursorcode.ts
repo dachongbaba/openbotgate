@@ -24,8 +24,13 @@ export class CursorCodeAdapter extends BaseToolAdapter {
     listAgents: false,
   };
 
+  /** Cursor 实际调用的是 agent 命令，非 commandName(cursor) */
+  protected getDefaultExecutable(): string {
+    return 'agent';
+  }
+
   buildCommand(prompt: string, options: RunOptions): string {
-    const parts = ['agent'];
+    const parts = [this.getExecutable()];
 
     if (!options.newSession && options.sessionId) {
       parts.push('--resume', options.sessionId);
@@ -36,7 +41,7 @@ export class CursorCodeAdapter extends BaseToolAdapter {
   }
 
   async listSessions(): Promise<SessionInfo[]> {
-    const output = await this.runHelper('agent ls', undefined);
+    const output = await this.runHelper(`${this.getExecutable()} ls`, undefined);
     if (!output) return [];
 
     const sessions: SessionInfo[] = [];

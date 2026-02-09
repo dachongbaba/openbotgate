@@ -27,7 +27,7 @@ export class OpenClawAdapter extends BaseToolAdapter {
   };
 
   buildCommand(prompt: string, options: RunOptions): string {
-    const parts = ['openclaw', 'agent', '--message', `"${this.escapePrompt(prompt)}"`];
+    const parts = [this.getExecutable(), 'agent', '--message', `"${this.escapePrompt(prompt)}"`];
 
     if (!options.newSession && options.sessionId) parts.push('--session-id', options.sessionId);
     if (options.agent) parts.push('--agent', options.agent);
@@ -36,13 +36,13 @@ export class OpenClawAdapter extends BaseToolAdapter {
   }
 
   async listModels(): Promise<string[]> {
-    const output = await this.runHelper('openclaw models list --plain');
+    const output = await this.runHelper(`${this.getExecutable()} models list --plain`);
     if (!output) return [];
     return output.split('\n').map(l => l.trim()).filter(Boolean);
   }
 
   async listSessions(): Promise<SessionInfo[]> {
-    const output = await this.runHelper('openclaw sessions --json');
+    const output = await this.runHelper(`${this.getExecutable()} sessions --json`);
     if (!output) return [];
 
     try {
@@ -68,7 +68,7 @@ export class OpenClawAdapter extends BaseToolAdapter {
   }
 
   async listAgents(): Promise<string[]> {
-    const output = await this.runHelper('openclaw agents list --json');
+    const output = await this.runHelper(`${this.getExecutable()} agents list --json`);
     if (!output) return [];
 
     try {

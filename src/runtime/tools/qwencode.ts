@@ -22,7 +22,7 @@ export class QwenCodeAdapter extends BaseToolAdapter {
   };
 
   buildCommand(prompt: string, options: RunOptions): string {
-    const parts = ['qwen', '-p'];
+    const parts = [this.getExecutable(), '-p'];
 
     if (!options.newSession) {
       if (options.sessionId) {

@@ -79,6 +79,17 @@ export abstract class BaseToolAdapter implements ToolAdapter {
 
   abstract buildCommand(prompt: string, options: RunOptions): string;
 
+  /** 默认用于执行的可执行名（多数与 commandName 一致，如 cursor 用 agent） */
+  protected getDefaultExecutable(): string {
+    return this.commandName;
+  }
+
+  /** 实际执行时使用的命令/脚本，可被 config.codeToolCommandOverrides 覆盖 */
+  protected getExecutable(): string {
+    const override = config.codeToolCommandOverrides[this.name];
+    return override ?? this.getDefaultExecutable();
+  }
+
   async execute(prompt: string, options: RunOptions): Promise<ToolResult> {
     if (!config.allowedCodeTools.includes(this.name)) {
       return {

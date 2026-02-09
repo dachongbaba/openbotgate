@@ -1,0 +1,50 @@
+# OpenBotGate 配置文件示例
+# 复制为 openbotgate.yml 或 openbotgate.json 后按需修改
+# 敏感信息可继续放在 .env 中，由环境变量覆盖
+
+gateway:
+  type: feishu   # feishu | lark
+
+feishu:
+  appId: ""          # 可从环境变量 FEISHU_APP_ID 覆盖
+  appSecret: ""       # 建议用 .env 的 FEISHU_APP_SECRET
+  verificationToken: ""
+  domain: feishu      # feishu | lark
+
+# 可选网关：按需取消注释并填写，或通过环境变量覆盖
+# telegram:
+#   token: ""
+# discord:
+#   token: ""
+# qqGuild:
+#   appID: ""
+#   token: ""
+#   sandbox: false
+
+execution:
+  timeout: 120000       # 毫秒，最大 180000
+  codeTimeout: null     # Code 命令超时，不设则用 timeout
+  maxOutputLength: 10000
+  shellOutputEncoding: null   # Windows 下可设 gbk
+
+allowedCodeTools:
+  - opencode
+  - cursorcode
+  - claudecode
+  - openaicodex
+  - qwencode
+  - kimicode
+  - openclaw
+  - nanobot
+
+allowedShellCommands:
+  - git
+  - dir
+  - ls
+  - pwd
+
+# 某适配器使用自定义命令/脚本（如 claude.ps1 替代 claude）
+codeToolCommandOverrides: {}
+# codeToolCommandOverrides:
+#   claudecode: claude.ps1
+#   cursorcode: agent.ps1

@@ -42,7 +42,7 @@ allowedShellCommands:
   - pwd
 
 # Code 适配器：使用自定义命令/脚本（如 claude.ps1 替代 claude）
-codeToolCommandOverrides:
+codeToolOverrides:
   claudecode: claude.ps1
 
 # Shell 命令：使用自定义命令/脚本（如 git.ps1 替代 git）

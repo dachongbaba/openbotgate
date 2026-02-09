@@ -79,6 +79,8 @@ data/
 
 claude.ps1
 claude.sh
+codex.ps1
+codex.sh
 opencode.json
 opencode.ps1
 opencode.sh

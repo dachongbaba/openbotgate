@@ -84,9 +84,9 @@ export abstract class BaseToolAdapter implements ToolAdapter {
     return this.commandName;
   }
 
-  /** 实际执行时使用的命令/脚本，可被 config.codeToolCommandOverrides 覆盖 */
+  /** 实际执行时使用的命令/脚本，可被 config.codeToolOverrides 覆盖 */
   protected getExecutable(): string {
-    const override = config.codeToolCommandOverrides[this.name];
+    const override = config.codeToolOverrides[this.name];
     return override ?? this.getDefaultExecutable();
   }
 

@@ -9,7 +9,7 @@ const DEFAULT_ALLOWED_CODE_TOOLS = [
   'opencode', 'cursorcode', 'claudecode', 'openaicodex',
   'qwencode', 'kimicode', 'openclaw', 'nanobot',
 ];
-const DEFAULT_ALLOWED_SHELL_COMMANDS = ['git', 'dir', 'ls', 'pwd'];
+const DEFAULT_ALLOWED_SHELL_COMMANDS = ['git', 'pwd'];
 
 export interface BotConfig {
   gateway: { type: string };
@@ -36,7 +36,7 @@ export interface BotConfig {
   };
   allowedCodeTools: string[];
   allowedShellCommands: string[];
-  codeToolCommandOverrides: Record<string, string>;
+  codeToolOverrides: Record<string, string>;
   /** Shell 命令可执行文件覆盖（命令首词 -> 实际调用的命令/脚本），如 git -> git.ps1 */
   shellCommandOverrides: Record<string, string>;
 }
@@ -52,7 +52,7 @@ type RawConfig = Partial<{
   execution: Partial<BotConfig['execution']>;
   allowedCodeTools: string[];
   allowedShellCommands: string[];
-  codeToolCommandOverrides: Record<string, string>;
+  codeToolOverrides: Record<string, string>;
   shellCommandOverrides: Record<string, string>;
 }>;
 
@@ -77,7 +77,7 @@ function defaultConfig(): BotConfig {
     },
     allowedCodeTools: [...DEFAULT_ALLOWED_CODE_TOOLS],
     allowedShellCommands: [...DEFAULT_ALLOWED_SHELL_COMMANDS],
-    codeToolCommandOverrides: {},
+    codeToolOverrides: {},
     shellCommandOverrides: {},
   };
 }

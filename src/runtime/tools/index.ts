@@ -8,6 +8,8 @@ import { OpenClawAdapter } from './openclaw';
 import { NanobotAdapter } from './nanobot';
 import { CursorCodeAdapter } from './cursorcode';
 import { GeminiCodeAdapter } from './geminicode';
+import { CodeBuddyAdapter } from './codebuddy';
+import { QoderCodeAdapter } from './qodercode';
 
 const ALL_ADAPTERS: ToolAdapter[] = [
   new OpenCodeAdapter(),
@@ -19,6 +21,8 @@ const ALL_ADAPTERS: ToolAdapter[] = [
   new NanobotAdapter(),
   new CursorCodeAdapter(),
   new GeminiCodeAdapter(),
+  new CodeBuddyAdapter(),
+  new QoderCodeAdapter(),
 ];
 
 /**

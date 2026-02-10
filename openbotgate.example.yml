@@ -37,6 +37,8 @@ allowedCodeTools:
   - geminicode
   - openclaw
   - nanobot
+  - codebuddy
+  - qodercode
 
 allowedShellCommands:
   - git

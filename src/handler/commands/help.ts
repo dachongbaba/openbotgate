@@ -4,7 +4,7 @@ import logger from '../../utils/logger';
 
 const HELP_CODE = `*Code* (tool + session)
 • \`/code\` - Show current tool / list available tools
-• \`/code <tool>\` - Switch default tool (opencode, claude, codex, qwen, kimi, openclaw, nanobot, cursor)
+• \`/code <tool>\` - Switch default tool (opencode, cursor, claude, codex, qwen, kimi, openclaw, gemini, nanobot)
 • \`/code <tool> "prompt"\` - One-shot execute with specified tool
 • \`/new\` - Start new session (clear history)
 • \`/session\` - List sessions | \`/session <id>\` - Switch to session

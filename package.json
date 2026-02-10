@@ -13,6 +13,7 @@
     "dev": "nodemon",
     "debug": "set DEBUG=true && ts-node src/debug.ts",
     "test": "jest",
+    "test:coverage": "jest --coverage --forceExit",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

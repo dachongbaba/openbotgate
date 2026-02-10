@@ -7,6 +7,7 @@ import { KimiAdapter } from './kimicode';
 import { OpenClawAdapter } from './openclaw';
 import { NanobotAdapter } from './nanobot';
 import { CursorCodeAdapter } from './cursorcode';
+import { GeminiCodeAdapter } from './geminicode';
 
 const ALL_ADAPTERS: ToolAdapter[] = [
   new OpenCodeAdapter(),
@@ -17,6 +18,7 @@ const ALL_ADAPTERS: ToolAdapter[] = [
   new OpenClawAdapter(),
   new NanobotAdapter(),
   new CursorCodeAdapter(),
+  new GeminiCodeAdapter(),
 ];
 
 /**

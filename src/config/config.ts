@@ -7,8 +7,9 @@ export const MAX_EXECUTION_TIMEOUT_MS = 180000;
 
 const DEFAULT_ALLOWED_CODE_TOOLS = [
   'opencode', 'cursorcode', 'claudecode', 'openaicodex',
-  'qwencode', 'kimicode', 'openclaw', 'nanobot',
+  'qwencode', 'kimicode', 'geminicode', 'openclaw', 'nanobot',
 ];
+
 const DEFAULT_ALLOWED_SHELL_COMMANDS = ['git', 'pwd'];
 
 export interface BotConfig {

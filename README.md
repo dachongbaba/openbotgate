@@ -7,7 +7,7 @@
 
 - ✅ **官方 SDK 集成**：使用飞书官方 `@larksuiteoapi/node-sdk`，确保稳定性和兼容性
 - ✅ **长连接**：使用飞书官方 SDK 长连接接收事件，无需 Webhook 公网地址
-- ✅ **多工具支持**：OpenCode、Claude Code、Cursor、Qwen、Kimi、OpenClaw、Nanobot 等 Code 工具；Shell 命令（默认 git、pwd）
+- ✅ **多工具支持**：OpenCode、Claude Code、Cursor、Qwen、Kimi、Gemini、OpenClaw、Nanobot 等 Code 工具；Shell 命令（默认 git、pwd）
 - ✅ **可定制可执行文件**：Code 工具与 Shell 命令均可配置为调用自定义脚本（如 `claude.ps1`、`git.ps1`）
 - ✅ **任务管理**：查看状态、取消任务、历史记录
 - ✅ **配置文件驱动**：使用 `openbotgate.yml` / `openbotgate.json` 统一配置，YAML 支持注释
@@ -107,7 +107,7 @@ npm run build && npm start   # 生产模式
 | 命令 | 说明 |
 |------|------|
 | `/code` | 显示当前工具及可用工具列表 |
-| `/code <tool>` | 切换默认工具（如 opencode、claude、codex、qwen、kimi、openclaw、nanobot、cursor） |
+| `/code <tool>` | 切换默认工具（如 opencode、claudecode、cursorcode、openaicodex、qwen、kimi、geminicode、openclaw、nanobot） |
 | `/code <tool> "prompt"` | 使用指定工具一次性执行提示词 |
 | `/new` | 新建会话（清空历史，取消当前任务） |
 | `/session` | 列出会话；`/session <id>` 切换到指定会话 |
@@ -164,13 +164,13 @@ npm run build && npm start   # 生产模式
 | `execution.maxOutputLength` | 单次输出最大长度 | 10000 |
 | `execution.shellOutputEncoding` | Shell 输出编码（如 Windows 下 gbk，可选） | 系统编码 |
 | **白名单** | | |
-| `allowedCodeTools` | 允许的 Code 工具（适配器名列表） | opencode, cursorcode, claudecode, openaicodex, qwencode, kimicode, openclaw, nanobot |
+| `allowedCodeTools` | 允许的 Code 工具（适配器名列表） | opencode, cursorcode, claudecode, openaicodex, qwencode, kimicode, geminicode, openclaw, nanobot |
 | `allowedShellCommands` | 允许的 Shell 命令首词列表 | git, pwd |
 | **覆盖** | | |
 | `codeToolOverrides` | Code 适配器 → 实际可执行名（如 claudecode: claude.ps1） | {} |
 | `shellCommandOverrides` | Shell 命令首词 → 实际可执行名（如 git: git.ps1） | {} |
 
-完整示例见 **openbotgate.example.yml**。
+完整示例见 **openbotgate.example.yml**。网关类型与多网关说明见 **[docs/GATEWAYS.md](docs/GATEWAYS.md)**。
 
 ## 项目结构
 
@@ -222,6 +222,7 @@ openbotgate/
 │   │       ├── openaicodex.ts
 │   │       ├── qwencode.ts
 │   │       ├── kimicode.ts
+│   │       ├── geminicode.ts
 │   │       ├── openclaw.ts
 │   │       └── nanobot.ts
 │   ├── utils/
@@ -280,29 +281,6 @@ openbotgate/
 ## 发布（GitHub / npm）
 
 完整流程与 rebase 约定见 **[docs/PUBLISHING.md](docs/PUBLISHING.md)**。
-
-### 发布前准备
-
-1. **替换仓库地址**：在 `package.json` 中将 `dachongbaba` 改为你的 GitHub 用户名或组织名（若不同）
-2. **LICENSE**：已包含 MIT 许可证，可根据需要修改版权方
-3. **版本号**：按 [语义化版本](https://semver.org/) 更新 `package.json` 的 `version`
-
-### 发布到 GitHub
-
-```bash
-git remote add origin https://github.com/dachongbaba/openbotgate.git
-git push -u origin main
-```
-
-### 发布到 npm
-
-```bash
-npm login
-npm pack --dry-run   # 可选：确认将要发布的文件
-npm publish         # 会先执行 prepublishOnly 即 npm run build
-```
-
-私有包使用 `npm publish --access restricted`；作用域包如 `@your-org/openbotgate` 首次发布需加 `--access public`。
 
 ## License
 

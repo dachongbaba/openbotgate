@@ -57,7 +57,6 @@
     "qq-guild-bot": "^2.9.5",
     "telegraf": "^4.16.3",
     "uuid": "^9.0.0",
-    "whatsapp-web.js": "^1.26.0",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0"
   },

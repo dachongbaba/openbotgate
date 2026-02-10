@@ -104,7 +104,7 @@ openbotgate/
 
 | 目录 | 职责 |
 |------|------|
-| `gateway/` | 多网关抽象，Feishu/Telegram/Discord/WhatsApp/QQ 实现 |
+| `gateway/` | 多网关抽象，Feishu/Telegram/Discord/QQ 实现 |
 | `handler/` | 消息解析、去重、路由命令 |
 | `runtime/` | CLI 执行、任务队列、ToolAdapter |
 | `config/` | 从配置文件加载并导出 `config` |

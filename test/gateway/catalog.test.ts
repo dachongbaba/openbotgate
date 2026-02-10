@@ -31,7 +31,7 @@ describe('gateway catalog', () => {
       const list = listSupportedGateways();
       expect(list).toHaveLength(GATEWAY_CATALOG.length);
       expect(list.map((e) => e.id).sort()).toEqual(
-        ['discord', 'feishu', 'qq', 'telegram', 'whatsapp'].sort()
+        ['discord', 'feishu', 'qq', 'telegram'].sort()
       );
     });
   });

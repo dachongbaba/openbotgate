@@ -15,7 +15,6 @@ export function normalizeGatewayType(raw: string | undefined): string {
 const GATEWAY_LOADERS: Record<string, () => IGateway> = {
   feishu: () => require('./feishu').feishu,
   telegram: () => require('./telegram').telegram,
-  whatsapp: () => require('./whatsapp').whatsapp,
   discord: () => require('./discord').discord,
   qq: () => require('./qq').qq,
 };

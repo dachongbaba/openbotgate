@@ -34,10 +34,10 @@ describe('CLITools', () => {
     config.allowedShellCommands.push(...savedAllowedShellCommands);
   });
 
-  describe('runTool (opencode)', () => {
+  describe('run (opencode)', () => {
     it('returns error when not in allowed code tools', async () => {
       config.allowedCodeTools = config.allowedCodeTools.filter(x => x !== 'opencode');
-      const result = await cliTools.runTool('opencode', 'test', {});
+      const result = await cliTools.run('opencode', 'test', {});
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('not in allowed');
@@ -50,7 +50,7 @@ describe('CLITools', () => {
         success: true, exitCode: 0, stdout: 'output', stderr: '', duration: 100,
       });
 
-      const result = await cliTools.runTool('opencode', 'test', {});
+      const result = await cliTools.run('opencode', 'test', {});
 
       expect(result.success).toBe(true);
       expect(result.output).toBe('output');
@@ -63,17 +63,17 @@ describe('CLITools', () => {
         success: false, exitCode: 1, stdout: '', stderr: 'error', duration: 50,
       });
 
-      const result = await cliTools.runTool('opencode', 'test', {});
+      const result = await cliTools.run('opencode', 'test', {});
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('error');
     });
   });
 
-  describe('runTool (claudecode)', () => {
+  describe('run (claudecode)', () => {
     it('returns error when not in allowed code tools', async () => {
       config.allowedCodeTools = config.allowedCodeTools.filter(x => x !== 'claudecode');
-      const result = await cliTools.runTool('claudecode', 'test', {});
+      const result = await cliTools.run('claudecode', 'test', {});
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('not in allowed');
@@ -85,17 +85,17 @@ describe('CLITools', () => {
         success: true, exitCode: 0, stdout: 'output', stderr: '', duration: 100,
       });
 
-      const result = await cliTools.runTool('claudecode', 'test', {});
+      const result = await cliTools.run('claudecode', 'test', {});
 
       expect(result.success).toBe(true);
       expect(result.output).toBe('output');
     });
   });
 
-  describe('runTool (shell)', () => {
+  describe('run (shell)', () => {
     it('returns error when command not in allowed shell commands', async () => {
       config.allowedShellCommands = [];
-      const result = await cliTools.runTool('shell', 'echo hello', {});
+      const result = await cliTools.run('shell', 'echo hello', {});
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('not in allowed shell commands');
@@ -107,17 +107,17 @@ describe('CLITools', () => {
         success: true, exitCode: 0, stdout: 'hello', stderr: '', duration: 10,
       });
 
-      const result = await cliTools.runTool('shell', 'echo hello', {});
+      const result = await cliTools.run('shell', 'echo hello', {});
 
       expect(result.success).toBe(true);
       expect(mockExecute).toHaveBeenCalledWith('echo hello', expect.any(Object));
     });
   });
 
-  describe('runTool (shell with git command)', () => {
+  describe('run (shell with git command)', () => {
     it('returns error when first word not in allowed shell commands', async () => {
       config.allowedShellCommands = [];
-      const result = await cliTools.runTool('shell', 'git status', {});
+      const result = await cliTools.run('shell', 'git status', {});
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('not in allowed shell commands');
@@ -129,7 +129,7 @@ describe('CLITools', () => {
         success: true, exitCode: 0, stdout: 'On branch main', stderr: '', duration: 20,
       });
 
-      const result = await cliTools.runTool('shell', 'git status', {});
+      const result = await cliTools.run('shell', 'git status', {});
 
       expect(result.success).toBe(true);
       expect(mockExecute).toHaveBeenCalledWith('git status', expect.any(Object));
@@ -141,7 +141,7 @@ describe('CLITools', () => {
         success: true, exitCode: 0, stdout: '', stderr: '', duration: 10,
       });
 
-      await cliTools.runTool('shell', 'git log', { workingDir: '/path' });
+      await cliTools.run('shell', 'git log', { workingDir: '/path' });
 
       expect(mockExecute).toHaveBeenCalledWith('git log', expect.objectContaining({ workingDir: '/path' }));
     });

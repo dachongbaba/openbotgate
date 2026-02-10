@@ -30,7 +30,7 @@ const DEFAULT_SESSION: UserSession = {
  * - Debounced write to data/sessions.json
  * - Loads from file on startup
  */
-class SessionManager {
+export class SessionManager {
   private sessions = new Map<string, UserSession>();
   private filePath: string;
   private saveTimer: NodeJS.Timeout | null = null;

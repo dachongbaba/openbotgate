@@ -71,7 +71,7 @@ class TaskManager {
     logger.debug(`🚀 Executing ${task.tool}: ${cmdPreview}`);
 
     const streamOptions = { onOutput };
-    result = await cliTools.runTool(task.tool, task.command, streamOptions);
+    result = await cliTools.run(task.tool, task.command, streamOptions);
 
     task.result = result;
     task.status = result.success ? 'completed' : 'failed';

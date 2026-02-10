@@ -49,3 +49,10 @@ codeToolOverrides:
 shellCommandOverrides: {}
 # shellCommandOverrides:
 #   git: git.ps1
+
+# 日志（可选，不写则用默认）
+log:
+  level: info # error | warn | info | debug
+  dir: logs # 目录，相对工作目录或绝对路径
+  maxSize: 20m # 单文件最大大小
+  maxFiles: 14d # 保留天数

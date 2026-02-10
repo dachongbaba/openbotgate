@@ -167,9 +167,10 @@ function parseGenericPayload(data: GenericPayload, channel: string): ParsedEvent
 }
 
 /**
- * Process command asynchronously (runs in background)
+ * Process command asynchronously (runs in background).
+ * Exported for tests.
  */
-async function processCommand(ctx: CommandContext, text: string): Promise<void> {
+export async function processCommand(ctx: CommandContext, text: string): Promise<void> {
   const rawReply = ctx.reply;
 
   if (text.startsWith('/')) {

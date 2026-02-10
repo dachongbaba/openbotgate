@@ -1,9 +1,12 @@
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import * as fs from 'fs';
+import * as path from 'path';
+import { config } from '../config/config';
 
-const fs = require('fs');
-const path = require('path');
-const logDir = path.join(__dirname, '../../logs');
+const logDir = path.isAbsolute(config.log.dir)
+  ? config.log.dir
+  : path.join(process.cwd(), config.log.dir);
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
@@ -43,7 +46,7 @@ function formatTime(): string {
 }
 
 const winstonLogger = winston.createLogger({
-  level: 'info',
+  level: config.log.level,
   format: winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     winston.format.errors({ stack: true }),
@@ -65,10 +68,10 @@ const winstonLogger = winston.createLogger({
       filename: path.join(logDir, 'openbotgate-%DATE%.log'),
       datePattern: 'YYYY-MM-DD',
       zippedArchive: true,
-      maxSize: '20m',
-      maxFiles: '14d'
-    })
-  ]
+      maxSize: config.log.maxSize,
+      maxFiles: config.log.maxFiles,
+    }),
+  ],
 });
 
 /** 当前日期对应的日志文件名，与 DailyRotateFile 的 %DATE% 一致 */

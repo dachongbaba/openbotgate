@@ -57,12 +57,43 @@ git push origin main
 
 ## 发布到 npm
 
-### 首次发布
+### 发布前：npm 账号要求
 
-1. 登录 npm（若未登录）：
+官方 npm 要求发布包时满足以下**其一**，否则会报 `403 Forbidden - Two-factor authentication or granular access token with bypass 2fa enabled is required`：
+
+1. **为账号开启双因素认证（2FA）**  
+   登录 [npmjs.com](https://www.npmjs.com) → Account → **Add two-factor authentication**，按页面提示完成。发布时 `npm login` 会要求输入一次性验证码。
+
+2. **使用 Granular Access Token（细粒度令牌）并勾选“Bypass 2FA”**  
+   [npmjs.com](https://www.npmjs.com) → Account → **Access Tokens** → **Generate New Token** → 选择 **Granular Access Token**，权限勾选 **Packages: Read and write**，并勾选 **Bypass 2FA for publish**。
+
+**已有 token 时如何使用：**
+
+- **本地发布（推荐）**：执行 `npm login --registry=https://registry.npmjs.org/`，Username 填 npm 用户名，**Password 填 token**（不是账号密码），Email 填账号邮箱。登录成功后直接执行 `npm publish --registry=https://registry.npmjs.org/` 即可。
+- **CI/脚本**：在 `.npmrc` 中写 `//registry.npmjs.org/:_authToken=${NPM_TOKEN}`，在 CI 或本机设置环境变量 `NPM_TOKEN` 为 token 后再执行 `npm publish`；勿将 token 明文提交到仓库。
+
+完成其一后再执行下面的登录与发布命令。
+
+---
+
+若本机 npm 使用了镜像（如 npmmirror），登录和发布会走镜像站。要发布到 **官方 npm**，请在命令中临时指定官方仓库地址：
 
 ```bash
-npm login
+# 登录官方 npm
+npm login --registry=https://registry.npmjs.org/
+
+# 发布到官方 npm
+npm publish --registry=https://registry.npmjs.org/
+```
+
+以下流程均以发布到官方 npm 为例；若使用镜像或私有源，可去掉 `--registry` 或改为对应地址。
+
+### 首次发布
+
+1. 登录 npm（若未登录），使用官方仓库：
+
+```bash
+npm login --registry=https://registry.npmjs.org/
 ```
 
 2. 可选：确认将要打包的文件，避免误发：
@@ -74,20 +105,26 @@ npm pack --dry-run
 3. 发布。会先执行 `prepublishOnly`（即 `npm run build`），再打包上传：
 
 ```bash
-npm publish
+npm publish --registry=https://registry.npmjs.org/
 ```
 
-- 私有包：`npm publish --access restricted`
-- 作用域包（如 `@your-org/openbotgate`）首次发布：`npm publish --access public`
+- 私有包：`npm publish --registry=https://registry.npmjs.org/ --access restricted`
+- 作用域包（如 `@your-org/openbotgate`）首次发布：`npm publish --registry=https://registry.npmjs.org/ --access public`
 
 ### 日常更新
 
 1. 更新 `package.json` 的 `version`（如 `npm version patch`）。
-2. 执行：
+2. 执行（使用官方仓库时）：
 
 ```bash
-npm publish
+npm publish --registry=https://registry.npmjs.org/
 ```
+
+---
+
+## 安装端已知问题（用户执行 `npm install -g openbotgate` 时）
+
+- **Windows EBUSY**：卸载或覆盖安装时可能出现 `EBUSY`（如 `@matrix-org/matrix-sdk-crypto-nodejs`），多为文件被占用，建议用户关闭占用进程后重试。
 
 ---
 
@@ -97,5 +134,5 @@ npm publish
 |----------------|------|
 | 首次推送到 GitHub | `git remote add origin <repo-url>` → `git push -u origin main` |
 | 日常推送到 GitHub | `git pull --rebase origin main` → `git push origin main` |
-| 首次发布到 npm   | `npm login` → `npm publish` |
-| 日常发布到 npm   | 改 version → `npm publish` |
+| 首次发布到 npm（官方） | `npm login --registry=https://registry.npmjs.org/` → `npm publish --registry=https://registry.npmjs.org/` |
+| 日常发布到 npm（官方） | 改 version → `npm publish --registry=https://registry.npmjs.org/` |

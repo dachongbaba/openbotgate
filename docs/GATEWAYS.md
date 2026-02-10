@@ -7,10 +7,9 @@
 | 序号 | id | 名称 | 说明 | 实现状态 |
 |------|-----|------|------|----------|
 | 1 | `telegram` | Telegram | Bot API，轮询收消息 | ✅ 完整实现 |
-| 2 | `whatsapp` | WhatsApp | QR 扫码登录（whatsapp-web.js） | ✅ 完整实现 |
-| 3 | `discord` | Discord | Bot API（discord.js） | ✅ 完整实现 |
-| 4 | `feishu` | Feishu/Lark | 飞书 / Lark WebSocket | ✅ 完整实现 |
-| 5 | `qq` | QQ 频道 | qq-guild-bot 官方 SDK，WebSocket 长连接 | ✅ 完整实现 |
+| 2 | `discord` | Discord | Bot API（discord.js） | ✅ 完整实现 |
+| 3 | `feishu` | Feishu/Lark | 飞书 / Lark WebSocket | ✅ 完整实现 |
+| 4 | `qq` | QQ 频道 | qq-guild-bot 官方 SDK，WebSocket 长连接 | ✅ 完整实现 |
 
 通过环境变量 `GATEWAY_TYPE` 选择当前使用的网关（如 `feishu`、`telegram`、`discord`、`qq` 等）。所有网关均已完整实现并可接入 handler。
 
@@ -22,7 +21,6 @@
 |--------|------|----------|
 | `@larksuiteoapi/node-sdk` | ^1.58.0 | Feishu/Lark |
 | `telegraf` | ^4.16.3 | Telegram |
-| `whatsapp-web.js` | ^1.26.0 | WhatsApp |
 | `discord.js` | ^14.16.0 | Discord |
 | `qq-guild-bot` | ^2.9.5 | QQ 频道 |
 
@@ -45,20 +43,13 @@
 - **环境变量**：
   - `TELEGRAM_BOT_TOKEN`：Bot Token（从 @BotFather 获取）
 
-### 3.3 WhatsApp
-
-- **实现文件**：`src/gateway/whatsapp.ts`
-- **环境变量**：
-  - `WHATSAPP_SESSION_PATH`：（可选）会话持久化目录，如 `./.wwebjs_auth`
-  - `WHATSAPP_LOG_QR`：（可选）`true` 时在日志中输出 QR 内容
-
-### 3.4 Discord
+### 3.3 Discord
 
 - **实现文件**：`src/gateway/discord.ts`
 - **环境变量**：
   - `DISCORD_BOT_TOKEN`：Bot Token（在 Discord 开发者门户创建应用后获取）
 
-### 3.5 QQ 频道
+### 3.4 QQ 频道
 
 - **实现文件**：`src/gateway/qq.ts`
 - **环境变量**：
@@ -76,7 +67,6 @@
 |---------|--------------------------|--------------|
 | `feishu` | `FEISHU_APP_ID`、`FEISHU_APP_SECRET` | 飞书开放平台创建应用 |
 | `telegram` | `TELEGRAM_BOT_TOKEN` | [@BotFather](https://t.me/BotFather) 创建 Bot |
-| `whatsapp` | 无（首次会打 QR 码） | 可选：`WHATSAPP_SESSION_PATH`、`WHATSAPP_LOG_QR=true` |
 | `discord` | `DISCORD_BOT_TOKEN` | Discord 开发者门户创建应用 → Bot → Token |
 | `qq` | `QQ_GUILD_APP_ID`、`QQ_GUILD_TOKEN` | QQ 机器人平台创建应用获取；可选 `QQ_GUILD_INTENTS`、`QQ_GUILD_SANDBOX=true` |
 
@@ -104,10 +94,9 @@
 | `src/gateway/registry.ts` | `getGateway(type)` 根据类型返回网关实例 |
 | `src/gateway/feishu.ts` | 飞书网关 |
 | `src/gateway/telegram.ts` | Telegram 网关 |
-| `src/gateway/whatsapp.ts` | WhatsApp 网关 |
 | `src/gateway/discord.ts` | Discord 网关 |
 | `src/gateway/qq.ts` | QQ 频道网关 |
-| `src/config/config.ts` | 各网关的 config 字段（feishu、telegram、whatsapp、discord、qqGuild） |
+| `src/config/config.ts` | 各网关的 config 字段（feishu、telegram、discord、qqGuild） |
 | `src/handler/index.ts` | 按 `gateway.id` 分发，调用各 `handleXPayload` / `parseXPayload` |
 
 ---

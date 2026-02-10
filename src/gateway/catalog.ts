@@ -6,7 +6,6 @@ import type { GatewayCatalogEntry } from './types';
  */
 export const GATEWAY_CATALOG: GatewayCatalogEntry[] = [
   { id: 'telegram', label: 'Telegram', selectionLabel: 'Telegram (Bot API)', implemented: true },
-  { id: 'whatsapp', label: 'WhatsApp', selectionLabel: 'WhatsApp (QR link)', implemented: true },
   { id: 'discord', label: 'Discord', selectionLabel: 'Discord (Bot API)', implemented: true },
   { id: 'feishu', label: 'Feishu/Lark', selectionLabel: 'Feishu/Lark (飞书)', implemented: true },
   { id: 'qq', label: 'QQ 频道', selectionLabel: 'QQ 频道 (qq-guild-bot 官方)', implemented: true },

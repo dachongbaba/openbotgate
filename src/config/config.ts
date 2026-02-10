@@ -21,7 +21,6 @@ export interface BotConfig {
     domain: 'feishu' | 'lark';
   };
   telegram?: { token: string };
-  whatsapp?: { sessionPath?: string; logQr?: boolean };
   discord?: { token: string };
   qqGuild?: {
     appID: string;
@@ -60,7 +59,6 @@ type RawConfig = Partial<{
   gateway: Partial<{ type: string }>;
   feishu: Partial<BotConfig['feishu']>;
   telegram: Partial<BotConfig['telegram']>;
-  whatsapp: Partial<NonNullable<BotConfig['whatsapp']>>;
   discord: Partial<BotConfig['discord']>;
   qqGuild: Partial<NonNullable<BotConfig['qqGuild']>>;
   execution: Partial<BotConfig['execution']>;
@@ -81,7 +79,6 @@ function defaultConfig(): BotConfig {
       domain: 'feishu',
     },
     telegram: undefined,
-    whatsapp: undefined,
     discord: undefined,
     qqGuild: undefined,
     execution: {

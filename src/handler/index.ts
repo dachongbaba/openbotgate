@@ -27,10 +27,6 @@ export async function handleMessageEvent(gateway: IGateway, data: unknown): Prom
       await handleTelegramPayload(gateway, data);
       return;
     }
-    if (gateway.id === 'whatsapp') {
-      await handleWhatsAppPayload(gateway, data);
-      return;
-    }
     if (gateway.id === 'discord') {
       await handleDiscordPayload(gateway, data);
       return;
@@ -126,25 +122,6 @@ function parseTelegramUpdate(data: unknown): ParsedEvent {
     text: msg.text,
     messageType: 'text',
   };
-}
-
-async function handleWhatsAppPayload(gateway: IGateway, data: unknown): Promise<void> {
-  const event = parseWhatsAppPayload(data as WhatsAppPayload);
-  if (!event.text.trim()) return;
-  await buildContextAndProcess(gateway, event);
-}
-
-interface WhatsAppPayload {
-  messageId: string;
-  chatId: string;
-  senderId: string;
-  senderName?: string;
-  chatType: string;
-  text: string;
-}
-
-function parseWhatsAppPayload(data: WhatsAppPayload): ParsedEvent {
-  return { ...data, channel: 'whatsapp', messageType: 'text' };
 }
 
 async function handleDiscordPayload(gateway: IGateway, data: unknown): Promise<void> {

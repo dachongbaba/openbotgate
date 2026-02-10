@@ -193,7 +193,6 @@ openbotgate/
 │   │   ├── feishu.ts    # 飞书 API 集成
 │   │   ├── telegram.ts
 │   │   ├── discord.ts
-│   │   ├── whatsapp.ts
 │   │   └── qq.ts
 │   ├── handler/          # 消息处理
 │   │   ├── index.ts     # 路由入口
@@ -276,6 +275,13 @@ openbotgate/
 1. 在 `src/runtime/tools/` 下新建适配器，实现 `ToolAdapter`（参见 `base.ts`）
 2. 在 `src/runtime/tools/index.ts` 的 `ALL_ADAPTERS` 中注册
 3. 在配置文件的 `allowedCodeTools` 中加入适配器名称；如需自定义可执行名，在 `codeToolOverrides` 中配置
+
+## 安装问题排查
+
+| 现象 | 原因 | 处理方式 |
+|------|------|----------|
+| Windows 下 `EBUSY: resource busy or locked`（如 `@matrix-org/matrix-sdk-crypto-nodejs`） | 安装/卸载时文件被占用（杀毒、其它终端等） | 关闭其它占用该目录的进程后重试；或换目录安装、以管理员重试 |
+| 大量 `npm warn deprecated` | 部分传递依赖已弃用，不影响运行 | 可忽略；后续会随上游依赖升级逐步减少 |
 
 ## 安全考虑
 

@@ -33,7 +33,7 @@ describe('config', () => {
         expect(c.allowedShellCommands).toEqual(['git', 'pwd']);
         expect(c.codeToolOverrides).toEqual({});
         expect(c.shellCommandOverrides).toEqual({});
-        expect(c.log).toEqual({ level: 'info', dir: 'logs', maxSize: '20m', maxFiles: '14d' });
+        expect(c.log).toEqual({ level: 'info', dir: 'logs', maxSize: '20m', maxFiles: '14d', debugMode: false });
       });
     });
 

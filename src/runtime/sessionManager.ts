@@ -111,8 +111,9 @@ export class SessionManager {
       }
 
       logger.info(`📁 Loaded ${this.sessions.size} user sessions from ${this.filePath}`);
-    } catch (error: any) {
-      logger.warn(`⚠️ Failed to load sessions: ${error.message}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      logger.warn(`⚠️ Failed to load sessions: ${msg}`);
     }
   }
 
@@ -138,8 +139,9 @@ export class SessionManager {
 
       fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2), 'utf-8');
       logger.debug(`💾 Saved ${this.sessions.size} user sessions`);
-    } catch (error: any) {
-      logger.error(`❌ Failed to save sessions: ${error.message}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      logger.error(`❌ Failed to save sessions: ${msg}`);
     }
   }
 }

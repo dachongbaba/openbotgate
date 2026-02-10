@@ -1,6 +1,22 @@
 import { BaseToolAdapter } from './base';
 import type { RunOptions, ToolCapabilities, SessionInfo } from './base';
 
+/** CLI `openclaw sessions --json` array element shape */
+interface OpenClawSessionRow {
+  id?: string;
+  session_id?: string;
+  title?: string;
+  name?: string;
+  updated_at?: string;
+  updatedAt?: string;
+}
+
+/** CLI `openclaw agents list --json` array element shape */
+interface OpenClawAgentRow {
+  id?: string;
+  name?: string;
+}
+
 /**
  * Adapter for OpenClaw CLI.
  * Rich AI agent platform with full session/model/agent management.
@@ -46,9 +62,9 @@ export class OpenClawAdapter extends BaseToolAdapter {
     if (!output) return [];
 
     try {
-      const data = JSON.parse(output);
+      const data = JSON.parse(output) as OpenClawSessionRow[] | undefined;
       if (Array.isArray(data)) {
-        return data.map((s: any) => ({
+        return data.map((s) => ({
           id: s.id || s.session_id || '',
           title: s.title || s.name || '',
           updatedAt: s.updated_at || s.updatedAt || '',
@@ -72,9 +88,9 @@ export class OpenClawAdapter extends BaseToolAdapter {
     if (!output) return [];
 
     try {
-      const data = JSON.parse(output);
+      const data = JSON.parse(output) as OpenClawAgentRow[] | undefined;
       if (Array.isArray(data)) {
-        return data.map((a: any) => a.name || a.id || String(a));
+        return data.map((a) => a.name || a.id || String(a));
       }
     } catch {
       return output.split('\n').map(l => l.trim()).filter(Boolean);

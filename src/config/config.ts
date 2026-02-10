@@ -50,6 +50,8 @@ export interface BotConfig {
     maxSize: string;
     /** 保留天数，如 14d，默认 14d */
     maxFiles: string;
+    /** 调试模式：为 true 时 shell 等仅打日志不回复、便于本地调试；默认 false */
+    debugMode?: boolean;
   };
 }
 
@@ -97,6 +99,7 @@ function defaultConfig(): BotConfig {
       dir: 'logs',
       maxSize: '20m',
       maxFiles: '14d',
+      debugMode: false,
     },
   };
 }

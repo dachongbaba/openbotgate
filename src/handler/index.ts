@@ -1,11 +1,11 @@
-import type { IGateway } from '../gateway/types';
 import logger from '../utils/logger';
 import { parseFeishuEvent, parseCommand } from './parse';
 import { getCommand } from './commands';
-import type { CommandContext, ParsedEvent } from './types';
 import { isDuplicateMessage } from './dedup';
 import { executePrompt } from './commands/code';
 import { sessionManager } from '../runtime/sessionManager';
+import type { IGateway } from '../gateway/types';
+import type { CommandContext, ParsedEvent } from './types';
 
 /**
  * Main message event handler - gateway-agnostic router.
@@ -83,16 +83,26 @@ export async function buildContextAndProcess(gateway: IGateway, event: ParsedEve
 }
 
 async function handleFeishuPayload(gateway: IGateway, data: unknown): Promise<void> {
-  await buildContextAndProcess(gateway, parseFeishuEvent(data as any, 'feishu'));
+  await buildContextAndProcess(gateway, parseFeishuEvent(data, 'feishu'));
 }
 
 async function handleTelegramPayload(gateway: IGateway, data: unknown): Promise<void> {
-  const event = parseTelegramUpdate(data as any);
+  const event = parseTelegramUpdate(data);
   if (!event.text.trim()) return;
   await buildContextAndProcess(gateway, event);
 }
 
-function parseTelegramUpdate(update: { message?: { message_id: number; chat: { id: number; type?: string }; from?: { id: number; username?: string; first_name?: string }; text?: string } }): ParsedEvent {
+interface TelegramUpdate {
+  message?: {
+    message_id: number;
+    chat: { id: number; type?: string };
+    from?: { id: number; username?: string; first_name?: string };
+    text?: string;
+  };
+}
+
+function parseTelegramUpdate(data: unknown): ParsedEvent {
+  const update = data as TelegramUpdate;
   const msg = update.message;
   if (!msg?.text) {
     return {
@@ -119,22 +129,40 @@ function parseTelegramUpdate(update: { message?: { message_id: number; chat: { i
 }
 
 async function handleWhatsAppPayload(gateway: IGateway, data: unknown): Promise<void> {
-  const event = parseWhatsAppPayload(data as any);
+  const event = parseWhatsAppPayload(data as WhatsAppPayload);
   if (!event.text.trim()) return;
   await buildContextAndProcess(gateway, event);
 }
 
-function parseWhatsAppPayload(data: { messageId: string; chatId: string; senderId: string; senderName?: string; chatType: string; text: string }): ParsedEvent {
+interface WhatsAppPayload {
+  messageId: string;
+  chatId: string;
+  senderId: string;
+  senderName?: string;
+  chatType: string;
+  text: string;
+}
+
+function parseWhatsAppPayload(data: WhatsAppPayload): ParsedEvent {
   return { ...data, channel: 'whatsapp', messageType: 'text' };
 }
 
 async function handleDiscordPayload(gateway: IGateway, data: unknown): Promise<void> {
-  const event = parseDiscordPayload(data as any);
+  const event = parseDiscordPayload(data as DiscordPayload);
   if (!event.text.trim()) return;
   await buildContextAndProcess(gateway, event);
 }
 
-function parseDiscordPayload(data: { messageId: string; chatId: string; senderId: string; senderName?: string; chatType: string; text: string }): ParsedEvent {
+interface DiscordPayload {
+  messageId: string;
+  chatId: string;
+  senderId: string;
+  senderName?: string;
+  chatType: string;
+  text: string;
+}
+
+function parseDiscordPayload(data: DiscordPayload): ParsedEvent {
   return { ...data, channel: 'discord', messageType: 'text' };
 }
 

@@ -46,7 +46,7 @@ export class TelegramGateway implements IGateway {
     }
     await this.getBot().telegram.sendMessage(chatId, text, {
       reply_parameters: { message_id: parseInt(messageId, 10) },
-    } as any);
+    } as any); // Telegraf 类型不全
   }
 
   async send(chatId: string, _chatIdType: string, title: string, content: string): Promise<void> {

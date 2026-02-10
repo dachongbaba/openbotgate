@@ -30,6 +30,7 @@ describe('commands run()', () => {
       expect(title).toContain('Help');
       expect(content).toMatch(/\/code|\/status|\/tasks|Tip/);
     });
+
   });
 
   describe('status', () => {

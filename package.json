@@ -13,7 +13,7 @@
     "dev": "nodemon",
     "debug": "set DEBUG=true && ts-node src/debug.ts",
     "test": "jest",
-    "test:coverage": "jest --coverage --forceExit",
+    "test:coverage": "jest --coverage --forceExit && node scripts/coverage-to-markdown.js",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

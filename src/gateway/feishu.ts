@@ -8,8 +8,8 @@ let wsReady = false;
 const sdkLogger = {
   debug: () => {},  // Suppress debug
   trace: () => {},  // Suppress trace
-  info: (...args: any[]) => {
-    const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+  info: (...args: unknown[]) => {
+    const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
     // Mark ready when any "ready" message from SDK
     if (!wsReady && (msg.includes('ready') || msg.includes('connected'))) {
       wsReady = true;
@@ -20,8 +20,8 @@ const sdkLogger = {
     if (msg.includes('client ready')) return;
     if (msg.includes('receive events')) return;
   },
-  warn: (...args: any[]) => { logger.warn(`[feishu] ${args.join(' ')}`); },
-  error: (...args: any[]) => { logger.error(`[feishu] ${args.join(' ')}`); },
+  warn: (...args: unknown[]) => { logger.warn(`[feishu] ${args.map(a => String(a)).join(' ')}`); },
+  error: (...args: unknown[]) => { logger.error(`[feishu] ${args.map(a => String(a)).join(' ')}`); },
 };
 
 const NAME_CACHE_MAX = 2000;
@@ -61,6 +61,7 @@ export class FeishuGateway implements IGateway {
 
   registerMessageHandler(handler: (data: any) => Promise<void>) {
     if (!this.eventDispatcher) {
+      // SDK 类型不完整，EventDispatcher 构造选项需 as any
       this.eventDispatcher = new Lark.EventDispatcher({
         verificationToken: config.feishu.verificationToken || '',
         logger: sdkLogger,
@@ -81,7 +82,7 @@ export class FeishuGateway implements IGateway {
     try {
       await this.getClient().im.message.create({
         params: {
-          receive_id_type: receiveIdType as any,
+          receive_id_type: receiveIdType as any, // SDK 类型不完整
         },
         data: {
           receive_id: receiveId,
@@ -118,7 +119,7 @@ export class FeishuGateway implements IGateway {
 
       await this.getClient().im.message.create({
         params: {
-          receive_id_type: receiveIdType as any,
+          receive_id_type: receiveIdType as any, // SDK 类型不完整
         },
         data: {
           receive_id: receiveId,
@@ -149,14 +150,14 @@ export class FeishuGateway implements IGateway {
     }
   }
 
-  async getMessage(messageId: string): Promise<any> {
+  async getMessage(messageId: string): Promise<Record<string, unknown>> {
     try {
       const response = await this.getClient().im.message.get({
         path: {
           message_id: messageId,
         },
       });
-      return response.data;
+      return (response.data ?? {}) as Record<string, unknown>;
     } catch (error) {
       logger.error('Failed to get message:', error);
       throw error;
@@ -242,6 +243,7 @@ export class FeishuGateway implements IGateway {
     });
 
     wsClient.start({
+      // SDK 类型不完整，EventDispatcher 构造选项需 as any
       eventDispatcher: new Lark.EventDispatcher({ logger: sdkLogger } as any).register({
         'im.message.receive_v1': async (data) => {
           await messageHandler(data);

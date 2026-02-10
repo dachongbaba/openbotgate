@@ -45,8 +45,9 @@ async function sendResult(
 ): Promise<void> {
   const output = result.success ? result.output : result.error;
 
+  const debugMode = config.log.debugMode ?? false;
   if (!output || output.trim() === '') {
-    if (process.env.DEBUG === 'true') {
+    if (debugMode) {
       logger.debug(`No output from ${result.tool}.`);
       return;
     }
@@ -65,7 +66,7 @@ async function sendResult(
 
     const messageContent = prefix + chunks[i];
 
-    if (process.env.DEBUG === 'true') {
+    if (debugMode) {
       logger.debug(messageContent);
     } else {
       try {
@@ -108,7 +109,7 @@ async function runShell(ctx: CommandContext, commandName: string): Promise<void>
       logger.info(`❌ shell (${commandName}) 失败 (${duration})`);
     }
     const outLen = result.output?.length ?? 0;
-    if (outLen > 0 && process.env.DEBUG === 'true') {
+    if (outLen > 0 && (config.log.debugMode ?? false)) {
       logger.debug(`shell result.output length=${outLen}, preview: ${result.output!.slice(0, 80).replace(/\n/g, ' ')}`);
     }
     await sendResult(result, ctx.reply);

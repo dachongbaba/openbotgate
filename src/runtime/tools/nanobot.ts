@@ -78,13 +78,14 @@ export class NanobotAdapter extends BaseToolAdapter {
         error: result.success ? undefined : (result.stderr || 'Command failed'),
         duration,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const duration = Date.now() - startTime;
+      const msg = error instanceof Error ? error.message : String(error);
       return {
         tool: this.name,
         success: false,
         output: '',
-        error: error.message || 'Unknown error occurred',
+        error: msg || 'Unknown error occurred',
         duration,
       };
     }

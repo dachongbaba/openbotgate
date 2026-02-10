@@ -63,15 +63,13 @@ class TaskManager {
     task.status = 'running';
     task.updatedAt = new Date();
 
-    let result: ToolResult;
-
     const cmdPreview = task.command.length > 50 
       ? task.command.substring(0, 50) + '...' 
       : task.command;
     logger.debug(`🚀 Executing ${task.tool}: ${cmdPreview}`);
 
     const streamOptions = { onOutput };
-    result = await cliTools.run(task.tool, task.command, streamOptions);
+    const result = await cliTools.run(task.tool, task.command, streamOptions);
 
     task.result = result;
     task.status = result.success ? 'completed' : 'failed';

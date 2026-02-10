@@ -59,7 +59,7 @@ export class DiscordGateway implements IGateway {
     if (!channel?.isTextBased()) return;
     await (channel as TextChannel).send({
       content: text,
-      reply: { messageReference: { messageId } } as any,
+      reply: { messageReference: { messageId } } as any, // Discord.js 类型不全
     });
   }
 

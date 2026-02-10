@@ -4,7 +4,8 @@ import { config } from '../config/config';
 /**
  * Shell output decoding for globally distributed apps (GitHub, npm).
  * Only used for shell commands (dir, git, etc.). Code tools (opencode, etc.) output UTF-8.
- * Uses SHELL_OUTPUT_ENCODING (config) or LANG/LC_*. Set SHELL_OUTPUT_ENCODING=gbk when needed.
+ * Priority: config.execution.shellOutputEncoding (openbotgate.yml) then fallback from
+ * system env (LANG / LC_ALL / LC_CTYPE). Set shellOutputEncoding: gbk in config when needed.
  */
 
 /** Locale encoding part (e.g. zh_CN.UTF-8 → utf8) → iconv encoding name. */

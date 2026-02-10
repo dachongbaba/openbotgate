@@ -57,3 +57,4 @@ log:
   dir: logs # 目录，相对工作目录或绝对路径
   maxSize: 20m # 单文件最大大小
   maxFiles: 14d # 保留天数
+  # debugMode: false # 设为 true 时 shell 等仅打日志不回复，便于本地调试

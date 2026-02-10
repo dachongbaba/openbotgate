@@ -82,22 +82,22 @@ function getCurrentLogPath(): string {
 
 // Custom logger wrapper that captures caller location at call time
 const logger = {
-  info: (message: string, ...args: any[]) => {
+  info: (message: string, ...args: unknown[]) => {
     const loc = getCallerLocation();
     const suffix = loc ? ` (${loc})` : '';
     winstonLogger.info(`${message}${suffix}`, ...args);
   },
-  warn: (message: string, ...args: any[]) => {
+  warn: (message: string, ...args: unknown[]) => {
     const loc = getCallerLocation();
     const suffix = loc ? ` (${loc})` : '';
     winstonLogger.warn(`${message}${suffix}`, ...args);
   },
-  error: (message: string, ...args: any[]) => {
+  error: (message: string, ...args: unknown[]) => {
     const loc = getCallerLocation();
     const suffix = loc ? ` (${loc})` : '';
     winstonLogger.error(`${message}${suffix}`, ...args);
   },
-  debug: (message: string, ...args: any[]) => {
+  debug: (message: string, ...args: unknown[]) => {
     const loc = getCallerLocation();
     const suffix = loc ? ` (${loc})` : '';
     winstonLogger.debug(`${message}${suffix}`, ...args);
@@ -131,11 +131,11 @@ const originalConsole = {
   debug: console.debug,
 };
 
-console.log = (...args: any[]) => { logger.info(`[console] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`); };
-console.info = (...args: any[]) => { logger.info(`[console] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`); };
-console.warn = (...args: any[]) => { logger.warn(`[console] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`); };
-console.error = (...args: any[]) => { logger.error(`[console] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`); };
-console.debug = (...args: any[]) => { logger.debug(`[console] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`); };
+console.log = (...args: unknown[]) => { logger.info(`[console] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`); };
+console.info = (...args: unknown[]) => { logger.info(`[console] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`); };
+console.warn = (...args: unknown[]) => { logger.warn(`[console] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`); };
+console.error = (...args: unknown[]) => { logger.error(`[console] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`); };
+console.debug = (...args: unknown[]) => { logger.debug(`[console] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`); };
 
 /**
  * Format duration to human-readable string

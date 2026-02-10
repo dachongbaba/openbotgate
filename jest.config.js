@@ -6,7 +6,7 @@ module.exports = {
   testMatch: ['**/*.test.ts'],
   collectCoverageFrom: ['src/**/*.ts', '!src/**/index.ts'],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
+  coverageReporters: ['text', 'text-summary', 'json-summary'],
   verbose: true,
   transform: {
     '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.test.json' }],

@@ -34,7 +34,7 @@ openbotgate/
 │   │   ├── streamHandler.ts
 │   │   └── tools/          # Code 工具适配器（ToolAdapter）
 │   │       ├── base.ts, registry.ts, index.ts
-│   │       └── opencode、claudecode、cursorcode、openaicodex、qwencode、kimicode、openclaw、nanobot
+│   │       └── opencode、claudecode、cursorcode、openaicodex、qwencode、kimicode、geminicode、openclaw、nanobot
 │   └── utils/              # logger、encoding
 ├── test/                   # 测试（handler、runtime、utils）
 ├── docs/                   # GATEWAYS.md、PUBLISHING.md
@@ -205,4 +205,4 @@ import type { Task, ToolResult } from './types'
 
 ---
 
-**最后更新**: 2025-02-09
+**最后更新**: 2026-02-10

@@ -101,6 +101,42 @@ describe('config', () => {
         expect(calls[0]).toBe('openbotgate.yml');
       });
     });
+
+    it('uses openbotgate.yaml when yml does not exist', () => {
+      mockExistsSync.mockImplementation((p: unknown) => path.basename(String(p)) === 'openbotgate.yaml');
+      mockReadFileSync.mockReturnValue('gateway:\n  type: feishu\n');
+      jest.isolateModules(() => {
+        const mod = require('../../src/config/config');
+        expect(mod.config.gateway.type).toBe('feishu');
+      });
+    });
+
+    it('parses YAML with null load as empty merge', () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockReturnValue('---\n');
+      jest.isolateModules(() => {
+        const mod = require('../../src/config/config');
+        expect(mod.config.gateway.type).toBe('feishu');
+      });
+    });
+
+    it('mergeDeep merges nested objects', () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockReturnValue(`
+execution:
+  timeout: 60000
+  maxOutputLength: 5000
+log:
+  level: warn
+`);
+      jest.isolateModules(() => {
+        const mod = require('../../src/config/config');
+        expect(mod.config.execution.timeout).toBe(60000);
+        expect(mod.config.execution.maxOutputLength).toBe(5000);
+        expect(mod.config.log.level).toBe('warn');
+        expect(mod.config.log.dir).toBe('logs');
+      });
+    });
   });
 
   describe('MAX_EXECUTION_TIMEOUT_MS', () => {

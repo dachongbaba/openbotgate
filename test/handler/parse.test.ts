@@ -107,6 +107,99 @@ describe('parseFeishuEvent', () => {
 
     expect(result.text).toBe('');
   });
+
+  it('uses sender_id.user_id when open_id is empty', () => {
+    const data = {
+      message: {
+        message_id: 'msg_123',
+        chat_id: 'chat_456',
+        message_type: 'text',
+        content: JSON.stringify({ text: 'hi' }),
+      },
+      sender: {
+        sender_id: { user_id: 'uid_999' },
+      },
+    };
+    const result = parseFeishuEvent(data);
+    expect(result.senderId).toBe('uid_999');
+    expect(result.senderUserId).toBe('uid_999');
+  });
+
+  it('post with no zh_cn content returns empty text', () => {
+    const data = {
+      message: {
+        message_id: 'msg_123',
+        chat_id: 'chat_456',
+        message_type: 'post',
+        content: JSON.stringify({ post: {} }),
+      },
+      sender: { sender_id: { open_id: 'u1' } },
+    };
+    const result = parseFeishuEvent(data);
+    expect(result.text).toBe('');
+  });
+
+  it('post with empty content array returns empty text', () => {
+    const data = {
+      message: {
+        message_id: 'msg_123',
+        chat_id: 'chat_456',
+        message_type: 'post',
+        content: JSON.stringify({ post: { zh_cn: { content: [] } } }),
+      },
+      sender: { sender_id: { open_id: 'u1' } },
+    };
+    const result = parseFeishuEvent(data);
+    expect(result.text).toBe('');
+  });
+
+  it('post block item without tag text is skipped', () => {
+    const data = {
+      message: {
+        message_id: 'msg_123',
+        chat_id: 'chat_456',
+        message_type: 'post',
+        content: JSON.stringify({
+          post: {
+            zh_cn: {
+              content: [[{ tag: 'at', user_id: 'x' }, { tag: 'text', text: 'hello' }]],
+            },
+          },
+        }),
+      },
+      sender: { sender_id: { open_id: 'u1' } },
+    };
+    const result = parseFeishuEvent(data);
+    expect(result.text).toBe('hello');
+  });
+
+  it('text message with empty contentObj.text returns empty', () => {
+    const data = {
+      message: {
+        message_id: 'msg_123',
+        chat_id: 'chat_456',
+        message_type: 'text',
+        content: JSON.stringify({}),
+      },
+      sender: { sender_id: { open_id: 'u1' } },
+    };
+    const result = parseFeishuEvent(data);
+    expect(result.text).toBe('');
+  });
+
+  it('sender without sender_id.name leaves senderName empty', () => {
+    const data = {
+      message: {
+        message_id: 'msg_123',
+        chat_id: 'chat_456',
+        message_type: 'text',
+        content: JSON.stringify({ text: 'x' }),
+      },
+      sender: { sender_id: { open_id: 'u1' } },
+    };
+    const result = parseFeishuEvent(data);
+    expect(result.senderName).toBe('');
+  });
 });
 
 describe('parseCommand', () => {

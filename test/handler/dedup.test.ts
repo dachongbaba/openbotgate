@@ -23,4 +23,15 @@ describe('dedup', () => {
     expect(isDuplicateMessage(id1)).toBe(false);
     expect(isDuplicateMessage(id2)).toBe(false);
   });
+
+  it('cleanup removes old entries after DEDUP_WINDOW_MS', () => {
+    jest.useFakeTimers();
+    const oldId = `old-${Date.now()}`;
+    expect(isDuplicateMessage(oldId)).toBe(false);
+    jest.advanceTimersByTime(5 * 60 * 1000 + 1);
+    const newId = `new-${Date.now()}`;
+    expect(isDuplicateMessage(newId)).toBe(false);
+    expect(isDuplicateMessage(oldId)).toBe(false);
+    jest.useRealTimers();
+  });
 });

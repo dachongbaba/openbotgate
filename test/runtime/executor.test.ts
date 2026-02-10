@@ -7,8 +7,9 @@ describe('CommandExecutor', () => {
   describe('execute', () => {
     it('respects max execution timeout config', () => {
       expect(config.execution.timeout).toBeLessThanOrEqual(MAX_EXECUTION_TIMEOUT_MS);
-      if (config.execution.codeTimeout !== undefined) {
-        expect(config.execution.codeTimeout).toBeLessThanOrEqual(MAX_EXECUTION_TIMEOUT_MS);
+      const codeTimeout = config.execution.codeTimeout;
+      if (typeof codeTimeout === 'number') {
+        expect(codeTimeout).toBeLessThanOrEqual(MAX_EXECUTION_TIMEOUT_MS);
       }
     });
 

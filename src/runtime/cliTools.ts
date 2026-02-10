@@ -15,7 +15,7 @@ export class CLITools {
    * Unified execution entry: Code adapter or Shell.
    * taskManager and handlers call this.
    */
-  async runTool(
+  async run(
     toolName: string,
     command: string,
     options: ToolOptions = {}
@@ -38,7 +38,7 @@ export class CLITools {
       });
     }
     if (toolName === 'shell') {
-      return this.runShell(command, options);
+      return this.runShellCommand(command, options);
     }
     return {
       tool: toolName,
@@ -67,7 +67,7 @@ export class CLITools {
     return adapter.execute(prompt, runOptions);
   }
 
-  private async runShell(command: string, options: ToolOptions = {}): Promise<ToolResult> {
+  private async runShellCommand(command: string, options: ToolOptions = {}): Promise<ToolResult> {
     const parts = command.trim().split(/\s+/);
     const firstWord = parts[0]?.toLowerCase() || '';
     if (!config.allowedShellCommands.includes(firstWord)) {

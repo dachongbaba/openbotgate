@@ -39,6 +39,17 @@ export interface BotConfig {
   codeToolOverrides: Record<string, string>;
   /** Shell 命令可执行文件覆盖（命令首词 -> 实际调用的命令/脚本），如 git -> git.ps1 */
   shellCommandOverrides: Record<string, string>;
+  /** 日志配置 */
+  log: {
+    /** 级别：error | warn | info | debug */
+    level: string;
+    /** 日志目录，相对当前工作目录或绝对路径，默认 logs */
+    dir: string;
+    /** 单文件最大大小，如 20m，默认 20m */
+    maxSize: string;
+    /** 保留天数，如 14d，默认 14d */
+    maxFiles: string;
+  };
 }
 
 /** 配置文件中的可选结构（部分字段可省略） */
@@ -54,6 +65,7 @@ type RawConfig = Partial<{
   allowedShellCommands: string[];
   codeToolOverrides: Record<string, string>;
   shellCommandOverrides: Record<string, string>;
+  log: Partial<BotConfig['log']>;
 }>;
 
 function defaultConfig(): BotConfig {
@@ -79,6 +91,12 @@ function defaultConfig(): BotConfig {
     allowedShellCommands: [...DEFAULT_ALLOWED_SHELL_COMMANDS],
     codeToolOverrides: {},
     shellCommandOverrides: {},
+    log: {
+      level: 'info',
+      dir: 'logs',
+      maxSize: '20m',
+      maxFiles: '14d',
+    },
   };
 }
 

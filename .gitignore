@@ -91,3 +91,6 @@ git-*.sh
 openbotgate.yml
 openbotgate.yaml
 openbotgate.json
+
+litellm.yml
+litellm.yaml

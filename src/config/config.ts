@@ -15,7 +15,6 @@ const DEFAULT_ALLOWED_CODE_TOOLS = [
   'kimicode', 
   'openclaw', 
   'nanobot',
-  'codebuddy',
 ];
 
 const DEFAULT_ALLOWED_SHELL_COMMANDS = ['git', 'pwd'];

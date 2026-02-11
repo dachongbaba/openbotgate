@@ -1,10 +1,11 @@
 import type { CommandContext } from '../types';
 import { config } from '../../config/config';
+import { toolRegistry } from '../../runtime/tools/registry';
 import logger from '../../utils/logger';
 
 const HELP_CODE = `*Code* (tool + session)
 • \`/code\` - Show current tool / list available tools
-• \`/code <tool>\` - Switch default tool (opencode, cursor, claude, codex, qwen, kimi, openclaw, gemini, nanobot)
+• \`/code <tool>\` - Switch default tool (<allowed code tools>)
 • \`/code <tool> "prompt"\` - One-shot execute with specified tool
 • \`/new\` - Start new session (clear history)
 • \`/session\` - List sessions | \`/session <id>\` - Switch to session
@@ -21,23 +22,24 @@ const HELP_TASK = `*Task*
 • \`/tasks\` - List running tasks
 • \`/cancel <task_id>\` - Cancel a task`;
 
-
-
+const PLACEHOLDER_CODE_TOOLS = '<allowed code tools>';
 const PLACEHOLDER_SHELL = '<allowed shell commands>';
 
 function buildHelpText(): string {
+  const codeToolList = toolRegistry.getEnabled().map((t) => t.commandName).join(', ') || '(none)';
+  const helpCode = HELP_CODE.replace(PLACEHOLDER_CODE_TOOLS, codeToolList);
+
   const shellLines = config.allowedShellCommands.length
     ? config.allowedShellCommands
         .map((name) => `• \`/${name} <args>\` - Execute ${name} command`)
         .join('\n')
     : '• (no shell commands configured)';
-
   const helpShell = HELP_SHELL.replace(PLACEHOLDER_SHELL, shellLines);
 
   return [
     '*AI Code Gateway - Help*',
     '',
-    HELP_CODE,
+    helpCode,
     '',
     helpShell,
     '',

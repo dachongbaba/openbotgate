@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import logger from '../utils/logger';
+import { config } from '../config/config';
 
 /**
  * Per-user session state
@@ -15,14 +16,24 @@ export interface UserSession {
   newSessionRequested: boolean;
 }
 
-const DEFAULT_SESSION: UserSession = {
-  tool: 'opencode',
-  sessionId: null,
-  model: null,
-  agent: null,
-  cwd: null,
-  newSessionRequested: false,
-};
+/**
+ * Get default tool from config (first in allowedCodeTools).
+ * Falls back to 'opencode' if config is empty.
+ */
+function getDefaultTool(): string {
+  return config.allowedCodeTools[0] || 'opencode';
+}
+
+function createDefaultSession(): UserSession {
+  return {
+    tool: getDefaultTool(),
+    sessionId: null,
+    model: null,
+    agent: null,
+    cwd: null,
+    newSessionRequested: false,
+  };
+}
 
 /**
  * Manages per-user session state with JSON file persistence.
@@ -46,7 +57,7 @@ export class SessionManager {
     const existing = this.sessions.get(userId);
     if (existing) return existing;
 
-    const session = { ...DEFAULT_SESSION };
+    const session = createDefaultSession();
     this.sessions.set(userId, session);
     return session;
   }
@@ -91,7 +102,7 @@ export class SessionManager {
 
   /** Full reset including tool and cwd */
   fullReset(userId: string): void {
-    this.sessions.set(userId, { ...DEFAULT_SESSION });
+    this.sessions.set(userId, createDefaultSession());
     this.scheduleSave();
   }
 
@@ -107,7 +118,7 @@ export class SessionManager {
 
       for (const [userId, session] of Object.entries(data)) {
         // Merge with defaults to handle schema changes
-        this.sessions.set(userId, { ...DEFAULT_SESSION, ...session });
+        this.sessions.set(userId, { ...createDefaultSession(), ...session });
       }
 
       logger.info(`📁 Loaded ${this.sessions.size} user sessions from ${this.filePath}`);

@@ -170,7 +170,7 @@ npm run build && npm start   # 生产模式
 | `execution.maxOutputLength` | 单次输出最大长度 | 10000 |
 | `execution.shellOutputEncoding` | Shell 输出编码（如 Windows 下 gbk，可选） | 系统编码 |
 | **白名单** | | |
-| `allowedCodeTools` | 允许的 Code 工具（适配器名列表） | opencode, cursorcode, claudecode, openaicodex, qwencode, kimicode, geminicode, openclaw, nanobot, codebuddy, qodercode |
+| `allowedCodeTools` | 允许的 Code 工具（适配器名列表） | opencode, cursorcode, claudecode, openaicodex, qwencode, kimicode, geminicode, openclaw, nanobot, codebuddy |
 | `allowedShellCommands` | 允许的 Shell 命令首词列表 | git, pwd |
 | **覆盖** | | |
 | `codeToolOverrides` | Code 适配器 → 实际可执行名（如 claudecode: claude.ps1） | {} |

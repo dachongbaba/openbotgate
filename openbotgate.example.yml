@@ -27,26 +27,28 @@ execution:
   maxOutputLength: 10000
   shellOutputEncoding: null # Windows 下可设 gbk
 
+# 允许的 Code 工具列表（列表中第一个工具为新用户的默认工具）
 allowedCodeTools:
   - opencode
-  - cursorcode
   - claudecode
   - openaicodex
+  - geminicode
+  - cursorcode
   - qwencode
   - kimicode
-  - geminicode
   - openclaw
   - nanobot
   - codebuddy
-  - qodercode
 
 allowedShellCommands:
   - git
   - pwd
 
 # Code 适配器：使用自定义命令/脚本（如 claude.ps1 替代 claude）
-codeToolOverrides:
-  claudecode: claude.ps1
+codeToolOverrides: {}
+# codeToolCommandOverrides:
+#   claudecode: claude.ps1
+#   cursorcode: agent.ps1
 
 # Shell 命令：使用自定义命令/脚本（如 git.ps1 替代 git）
 shellCommandOverrides: {}

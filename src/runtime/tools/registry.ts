@@ -31,9 +31,14 @@ class ToolRegistry {
     return Array.from(this.adapters.values());
   }
 
-  /** List only enabled adapters (based on config.allowedCodeTools) */
+  /** List only enabled adapters, in the order of config.allowedCodeTools */
   getEnabled(): ToolAdapter[] {
-    return this.list().filter(adapter => config.allowedCodeTools.includes(adapter.name));
+    const result: ToolAdapter[] = [];
+    for (const name of config.allowedCodeTools) {
+      const adapter = this.adapters.get(name);
+      if (adapter) result.push(adapter);
+    }
+    return result;
   }
 }
 

@@ -6,9 +6,16 @@ import * as yaml from 'js-yaml';
 export const MAX_EXECUTION_TIMEOUT_MS = 180000;
 
 const DEFAULT_ALLOWED_CODE_TOOLS = [
-  'opencode', 'cursorcode', 'claudecode', 'openaicodex',
-  'qwencode', 'kimicode', 'geminicode', 'openclaw', 'nanobot',
-  'codebuddy', 'qodercode',
+  'opencode', 
+  'claudecode', 
+  'openaicodex',
+  'geminicode', 
+  'cursorcode',
+  'qwencode', 
+  'kimicode', 
+  'openclaw', 
+  'nanobot',
+  'codebuddy',
 ];
 
 const DEFAULT_ALLOWED_SHELL_COMMANDS = ['git', 'pwd'];

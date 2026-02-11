@@ -1,6 +1,6 @@
 {
   "name": "openbotgate",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "AI coding tool gateway — run OpenCode, Claude Code from chat. Built for when inspiration strikes.",
   "main": "dist/index.js",
   "bin": {
